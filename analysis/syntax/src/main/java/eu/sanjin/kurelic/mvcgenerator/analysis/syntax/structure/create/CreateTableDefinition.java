@@ -7,21 +7,21 @@ import java.io.Serializable;
 
 public class CreateTableDefinition implements Serializable, CreateDefinition {
 
-    private TableDefinition tableDefinition;
+  private TableDefinition tableDefinition;
 
-    public CreateTableDefinition(TableDefinition tableDefinition) {
-        this.tableDefinition = tableDefinition;
-    }
+  public CreateTableDefinition(TableDefinition tableDefinition) {
+    this.tableDefinition = tableDefinition;
+  }
 
-    public TableDefinition getTableDefinition() {
-        return tableDefinition;
-    }
+  public TableDefinition getTableDefinition() {
+    return tableDefinition;
+  }
 
-    @Override
-    public String toString() {
-        return XmlTagBuilder.getStartTag(this) +
-                tableDefinition +
-                XmlTagBuilder.getEndTag(this);
-    }
+  @Override
+  public String toString() {
+    String xml = XmlTagBuilder.getStartTag(this);
+    xml += tableDefinition;
+    return xml + XmlTagBuilder.getEndTag(this);
+  }
 
 }

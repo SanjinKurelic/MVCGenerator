@@ -5,8 +5,8 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 
 public interface Predicate extends Expression {
 
-    Operator getOperator();
+  Operator getOperator();
 
-    void setOperator(Operator operator);
+  void setOperator(Operator operator);
 
 }

@@ -5,8 +5,8 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 
 public interface Operand extends Expression {
 
-    Token getOperand();
+  Token getOperand();
 
-    void setOperand(Token operand);
+  void setOperand(Token operand);
 
 }

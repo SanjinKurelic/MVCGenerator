@@ -9,25 +9,25 @@ import java.util.List;
 
 public class SyntaxTree implements Serializable {
 
-    private List<CreateDefinition> createDefinitions;
+  private List<CreateDefinition> createDefinitions;
 
-    public void setCreateDefinition(List<CreateDefinition> createDefinitions) {
-        this.createDefinitions = createDefinitions;
-    }
+  public void setCreateDefinition(List<CreateDefinition> createDefinitions) {
+    this.createDefinitions = createDefinitions;
+  }
 
-    public List<CreateDefinition> getCreateDefinitions() {
-        return createDefinitions;
-    }
+  public List<CreateDefinition> getCreateDefinitions() {
+    return createDefinitions;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(XmlTagBuilder.getStartTag(this));
-        for(CreateDefinition createDefinition : createDefinitions) {
-            sb.append(createDefinition);
-        }
-        sb.append(XmlTagBuilder.getEndTag(this));
-        return sb.toString();
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(XmlTagBuilder.getStartTag(this));
+    for (CreateDefinition createDefinition : createDefinitions) {
+      sb.append(createDefinition);
     }
+    sb.append(XmlTagBuilder.getEndTag(this));
+    return sb.toString();
+  }
 
 }

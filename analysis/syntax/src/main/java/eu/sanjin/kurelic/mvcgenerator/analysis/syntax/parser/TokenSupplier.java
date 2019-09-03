@@ -8,78 +8,77 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.exception.UnexpectedTokenS
 
 public class TokenSupplier {
 
-    private Tokens tokens;
-    private int index;
-    private int size;
+  private Tokens tokens;
+  private int index;
+  private int size;
 
-    public TokenSupplier(Tokens tokens) {
-        this.tokens = tokens;
-        this.size = tokens.size();
-        clear();
+  public TokenSupplier(Tokens tokens) {
+    this.tokens = tokens;
+    this.size = tokens.size();
+    clear();
+  }
+
+  public void clear() {
+    index = 0;
+  }
+
+  public TokenSupplier equalsOrThrow(Enum<?> token) throws SyntaxException {
+    String value = getValue().toLowerCase();
+    if (!value.equals(token.toString())) {
+      throw new UnexpectedTokenSyntaxException(getToken(), token.toString());
     }
+    return this;
+  }
 
-    public void clear() {
-        index = 0;
+  public boolean equalsToken(Enum<?> token) throws SyntaxException {
+    return getValue().toLowerCase().equals(token.toString());
+  }
+
+  public boolean hasNextToken(Enum<?> token) throws SyntaxException {
+    if (!hasNext()) {
+      return false;
     }
+    return getValue(index + 1).toLowerCase().equals(token.toString());
+  }
 
-    public TokenSupplier equalsOrThrow(Enum<?> token) throws SyntaxException {
-        String value = getValue().toLowerCase();
-        if (!value.equals(token.toString())) {
-            throw new UnexpectedTokenSyntaxException(getToken(), token.toString());
-        }
-        return this;
+  private String getValue(int index) throws SyntaxException {
+    try {
+      return tokens.get(index).getValue();
+    } catch (IndexOutOfBoundsException e) {
+      throw new UnexpectedEndOfFileSyntaxException();
     }
+  }
 
-    public boolean equalsToken(Enum<?> token) throws SyntaxException {
-        return getValue().toLowerCase().equals(token.toString());
+  public String getValue() throws SyntaxException {
+    return getValue(index);
+  }
+
+  public Token getToken() throws SyntaxException {
+    try {
+      return tokens.get(index);
+    } catch (IndexOutOfBoundsException e) {
+      throw new UnexpectedEndOfFileSyntaxException();
     }
+  }
 
-    public boolean hasNextToken(Enum<?> token) throws SyntaxException {
-        if(!hasNext()) {
-            return false;
-        }
-        return getValue(index + 1).toLowerCase().equals(token.toString());
+  private int getLastLineNumber() {
+    return tokens.get(tokens.size() - 1).getLineNumber();
+  }
+
+  public Integer getLineNumber() {
+    try {
+      return getToken().getLineNumber();
+    } catch (SyntaxException e) {
+      return getLastLineNumber();
     }
+  }
 
-    private String getValue(int index) throws SyntaxException {
-        try {
-            return tokens.get(index).getValue();
-        } catch (IndexOutOfBoundsException e) {
-            throw new UnexpectedEndOfFileSyntaxException();
-        }
-    }
+  public void next() {
+    index++;
+  }
 
-    public String getValue() throws SyntaxException {
-        return getValue(index);
-    }
-
-    public Token getToken() throws SyntaxException {
-        try {
-            return tokens.get(index);
-        } catch (IndexOutOfBoundsException e) {
-            throw new UnexpectedEndOfFileSyntaxException();
-        }
-    }
-
-    private int getLastLineNumber() {
-        return tokens.get(tokens.size() - 1).getLineNumber();
-    }
-
-    public Integer getLineNumber() {
-        try {
-            return getToken().getLineNumber();
-        } catch (SyntaxException e) {
-            return getLastLineNumber();
-        }
-
-    }
-
-    public void next() {
-        index++;
-    }
-
-    public boolean hasNext() {
-        return index < size;
-    }
+  public boolean hasNext() {
+    return index < size;
+  }
 
 }
