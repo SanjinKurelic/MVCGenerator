@@ -61,6 +61,14 @@ public class TokenSupplier {
     }
   }
 
+  public Token getNextToken() throws SyntaxException {
+    try {
+      return tokens.get(index + 1);
+    } catch (IndexOutOfBoundsException e) {
+      throw new SyntaxException();
+    }
+  }
+
   private int getLastLineNumber() {
     return tokens.get(tokens.size() - 1).getLineNumber();
   }

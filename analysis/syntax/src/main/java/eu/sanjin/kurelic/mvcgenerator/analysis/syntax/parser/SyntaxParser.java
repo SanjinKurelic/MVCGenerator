@@ -21,6 +21,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ColumnOperand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ConstantOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.DataTypeOperand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.KeywordOperand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operator.Operator;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
@@ -266,10 +267,10 @@ public class SyntaxParser {
         break; // Constant is valid default value
       case KEYWORD:
         if (token.equalsToken(KeywordToken.NULL)
-            || token.equalsToken(KeywordToken.USER)
-            || token.equalsToken(KeywordToken.CURRENT_USER)
-            || token.equalsToken(KeywordToken.SESSION_USER)
-            || token.equalsToken(KeywordToken.SYSTEM_USER)) {
+          || token.equalsToken(KeywordToken.USER)
+          || token.equalsToken(KeywordToken.CURRENT_USER)
+          || token.equalsToken(KeywordToken.SESSION_USER)
+          || token.equalsToken(KeywordToken.SYSTEM_USER)) {
           break; // valid keywords as default value
         }
       default:
@@ -294,8 +295,8 @@ public class SyntaxParser {
     }
     constraint = columnConstraint(); // <ColumnConstraint>
     if (token.equalsToken(KeywordToken.INITIALLY)
-        || (token.equalsToken(KeywordToken.NOT) && token.hasNextToken(KeywordToken.DEFERRABLE))
-        || token.equalsToken(KeywordToken.DEFERRABLE)) {
+      || (token.equalsToken(KeywordToken.NOT) && token.hasNextToken(KeywordToken.DEFERRABLE))
+      || token.equalsToken(KeywordToken.DEFERRABLE)) {
       constraintAttributes(); // <ConstraintAttributes>
     }
     return constraint;
@@ -376,8 +377,8 @@ public class SyntaxParser {
     }
     tableConstraintDefinition = tableConstraint(); // <ColumnConstraint>
     if (token.equalsToken(KeywordToken.INITIALLY)
-        || (token.equalsToken(KeywordToken.NOT) && token.hasNextToken(KeywordToken.DEFERRABLE))
-        || token.equalsToken(KeywordToken.DEFERRABLE)) {
+      || (token.equalsToken(KeywordToken.NOT) && token.hasNextToken(KeywordToken.DEFERRABLE))
+      || token.equalsToken(KeywordToken.DEFERRABLE)) {
       constraintAttributes(); // <ConstraintAttributes>
     }
     return tableConstraintDefinition;
@@ -501,7 +502,7 @@ public class SyntaxParser {
       return ReferenceAction.NO_ACTION;
     }
     String expected = String.format("%s, %s %s, %s %s or %s %s", KeywordToken.CASCADE, KeywordToken.SET,
-        KeywordToken.NULL, KeywordToken.SET, KeywordToken.DEFAULT, KeywordToken.NO, KeywordToken.ACTION);
+      KeywordToken.NULL, KeywordToken.SET, KeywordToken.DEFAULT, KeywordToken.NO, KeywordToken.ACTION);
     throw new UnexpectedTokenSyntaxException(token.getToken(), expected);
   }
 
@@ -571,7 +572,7 @@ public class SyntaxParser {
 
       // Second expression
       if (token.equalsToken(KeywordToken.TRUE) || token.equalsToken(KeywordToken.FALSE)
-          || token.equalsToken(KeywordToken.UNKNOWN)) {
+        || token.equalsToken(KeywordToken.UNKNOWN)) {
         testNode.setSecondExpression(new KeywordOperand(token.getToken()));
         token.next(); // "TRUE" | "FALSE" | "UNKNOWN"
       }
@@ -732,10 +733,10 @@ public class SyntaxParser {
     return combinedExpression;
   }
 
-  // <InPredicateValue> ::= <ValueExpression> [ "," <InPredicateValue> ]
+  // <InPredicateValue> ::= <Expression> [ "," <InPredicateValue> ]
   private List<Expression> inPredicateValue() throws SyntaxException {
     List<Expression> expressions = new ArrayList<>();
-    expressions.add(valueExpression()); // <ValueExpression>
+    expressions.add(expression()); // <Expression>
     if (token.equalsToken(SpecialCharacterToken.COMA)) {
       token.next(); // ","
       expressions.addAll(inPredicateValue()); // <InPredicateValue>
@@ -832,44 +833,33 @@ public class SyntaxParser {
     return rowValue;
   }
 
-  // <RowValueElement> ::= <ValueExpression> | "NULL" | "DEFAULT"
+  // <RowValueElement> ::= <Expression> | "NULL" | "DEFAULT"
   private Expression rowValueElement() throws SyntaxException {
     if (token.equalsToken(KeywordToken.NULL) | token.equalsToken(KeywordToken.DEFAULT)) {
       Token keyword = token.getToken();
       token.next(); // "NULL" | "DEFAULT"
       return new KeywordOperand(keyword);
     }
-    return valueExpression(); // <ValueExpression>
+    return expression(); // <Expression>
   }
 
-  // <ValueExpression> ::= <Expression> | <StringConstant> | <DateTimeConstant> | <IntervalConstant>
-  private Expression valueExpression() throws SyntaxException {
-    Token value = token.getToken();
-    if (value.getTokenType() == TokenType.CONSTANT_QUOTED_VALUE) {
-      token.next(); // <StringConstant> | <DateTimeConstant> | <IntervalConstant>
-      return new ConstantOperand(value);
-    }
-    return expression();
-  }
-
-  // <Expression> ::= <Term> [ ( "+" | "-" ) <Expression> ]
+  // <Expression> ::= <Term> [ ( "+" | "-" | "||" ) <Expression> ]
   private Expression expression() throws SyntaxException {
-    Expression term = term();
-    if (token.equalsToken(SpecialCharacterToken.PLUS) || token.equalsToken(SpecialCharacterToken.MINUS)) {
-      BinaryPredicate expression = new BinaryPredicate();
-      expression.setFirstExpression(term);
-      // Operator
-      Operator operator = new Operator(SpecialCharacterToken.PLUS, token.getLineNumber());
-      if (token.equalsToken(SpecialCharacterToken.MINUS)) {
-        operator.setOperator(SpecialCharacterToken.MINUS);
-      }
-      token.next(); // "+" | "-"
-      expression.setOperator(operator);
-
-      expression.setSecondExpression(expression());
-      return expression;
+    BinaryPredicate expression = new BinaryPredicate();
+    expression.setFirstExpression(term()); // <Term>
+    if (token.equalsToken(SpecialCharacterToken.PLUS)) {
+      expression.setOperator(new Operator(SpecialCharacterToken.PLUS, token.getLineNumber()));
+    } else if (token.equalsToken(SpecialCharacterToken.MINUS)) {
+      expression.setOperator(new Operator(SpecialCharacterToken.MINUS, token.getLineNumber()));
+    } else if (token.equalsToken(SpecialCharacterToken.CONCAT)) {
+      expression.setOperator(new Operator(SpecialCharacterToken.CONCAT, token.getLineNumber()));
+    } else {
+      return expression.getFirstExpression(); // return term only
     }
-    return term;
+    token.next(); // "+" | "-" | "||"
+    expression.setSecondExpression(expression());
+
+    return expression;
   }
 
   // <Term> ::= <Factor> [ <BinaryOperator> <Term> ]
@@ -891,7 +881,7 @@ public class SyntaxParser {
     return factor;
   }
 
-  // <Factor> ::= [ "+" | "-" ] <Value>
+  // <Factor> ::= [ ( "+" | "-" ) ] <Value> [ ( <TimeZone> | <IntervalQualifier> ) ]
   private Expression factor() throws SyntaxException {
     Expression factor;
     if (token.equalsToken(SpecialCharacterToken.MINUS)) {
@@ -907,28 +897,61 @@ public class SyntaxParser {
       }
       factor = value();
     }
+    // TODO TimeZone IntervalQualifier
     return factor;
   }
 
-  // <Value> ::= <ColumnName> | <NumericConstant> | "(" <ValueExpression> ")" | "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER"
+  // <Value> ::= <ColumnName> | <NumericValue> | <QuotedString> | "(" <ValueExpression> ")" | <UserValue> | <DateTimeValue> | <CastSpecification>
+  // <UserValue> ::= "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER"
+  // <DateTimeValue> ::= "CURRENT_DATE" | "CURRENT_TIME" [ <Precision> ] | "CURRENT_TIMESTAMP" [ <Precision> ]
   private Expression value() throws SyntaxException {
     Expression value;
     if (token.equalsToken(SpecialCharacterToken.LEFT_BRACKET)) {
       token.next(); // "("
-      value = valueExpression(); // <ValueExpression>
+      value = expression(); // <Expression>
       token.equalsOrThrow(SpecialCharacterToken.RIGHT_BRACKET).next(); // ")"
     } else if (token.equalsToken(KeywordToken.USER) || token.equalsToken(KeywordToken.CURRENT_USER)
-        || token.equalsToken(KeywordToken.SESSION_USER) || token.equalsToken(KeywordToken.SYSTEM_USER)) {
+      || token.equalsToken(KeywordToken.SESSION_USER) || token.equalsToken(KeywordToken.SYSTEM_USER)) {
       value = new KeywordOperand(token.getToken());
       token.next(); // "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER"
     } else if (token.getToken().getTokenType() == TokenType.CONSTANT_INTEGER_VALUE
-        || token.getToken().getTokenType() == TokenType.CONSTANT_REAL_NUMBER_VALUE) {
+      || token.getToken().getTokenType() == TokenType.CONSTANT_REAL_NUMBER_VALUE) {
       value = new ConstantOperand(token.getToken());
       token.next(); // <NumericConstant>
+    } else if (token.equalsToken(KeywordToken.CAST)) {
+      value = castSpecification();
     } else {
       value = new ColumnOperand(columnName()); // <ColumnName>
     }
     return value;
+  }
+
+  // <CastSpecification> ::= "CAST" "(" <CastOperand> "AS" <CastTarget> ")"
+  // <CastOperand> ::= <Expression> | "NULL"
+  // <CastTarget> ::= <DataType> | <ColumnName>
+  private BinaryPredicate castSpecification() throws SyntaxException {
+    BinaryPredicate binaryPredicate = new BinaryPredicate();
+    binaryPredicate.setOperator(new Operator(SpecialCharacterToken.CAST, token.getLineNumber()));
+
+    token.equalsOrThrow(KeywordToken.CAST).next(); // "CAST"
+    token.equalsOrThrow(SpecialCharacterToken.LEFT_BRACKET).next(); // "("
+    // <CastOperand>
+    if (token.equalsToken(KeywordToken.NULL)) {
+      binaryPredicate.setFirstExpression(new KeywordOperand(token.getToken()));
+      token.next(); // "NULL"
+    } else {
+      binaryPredicate.setFirstExpression(expression()); // <Expression>
+    }
+    token.equalsOrThrow(KeywordToken.AS).next(); // "AS"
+    // <CastTarget>
+    if (token.getToken().getTokenType() == TokenType.DATA_TYPE) {
+      binaryPredicate.setSecondExpression(new DataTypeOperand(dataType())); // <DataType>
+    } else {
+      binaryPredicate.setSecondExpression(new ColumnOperand(columnName())); // <ColumnName>
+    }
+    token.equalsOrThrow(SpecialCharacterToken.RIGHT_BRACKET).next(); // ")"
+
+    return binaryPredicate;
   }
 
   // <ColumnNameList> ::= <columnName> [ "," <columnNameList> ]
@@ -999,8 +1022,8 @@ public class SyntaxParser {
         throw new InvalidIdentifierSyntaxException(identifier.getLineNumber(), InvalidIdentifierSyntaxException.ErrorType.INVALID_FIRST_CHARACTER);
       }
       if (!firstLetter && !(Character.isLetterOrDigit(character)
-          || character == LexicalSpecialCharacters.UNDERSCORE_DELIMITER.toChar()
-          || character == LexicalSpecialCharacters.SPACE_DELIMITER.toChar())) {
+        || character == LexicalSpecialCharacters.UNDERSCORE_DELIMITER.toChar()
+        || character == LexicalSpecialCharacters.SPACE_DELIMITER.toChar())) {
         throw new InvalidIdentifierSyntaxException(identifier.getLineNumber(), InvalidIdentifierSyntaxException.ErrorType.INVALID_CHARACTER);
       }
       firstLetter = false;

@@ -1,0 +1,91 @@
+<CreateDefinition> ::= "CREATE" <CreateTableDefinition> ";" [ <CreateDefinition> ]
+<CreateTableDefinition> ::= "TABLE" <TableDefinition>
+<TableDefinition> ::= <TableName> "(" <TableElementList> ")"
+<TableElementList> ::= <TableElement> [ "," <TableElementList> ]
+<TableElement> ::= <ColumnDefinition> | <TableConstraintDefinition>
+<ColumnDefinition> ::= <ColumnName> <DataType> [ <DefaultClause> ] [ <ColumnConstraintDefinitions> ] [ <CollateClause> ]
+<ColumnConstraintDefinitions> ::= <ColumnConstraintDefinition> [ <ColumnConstraintDefinitions> ]
+<DefaultClause> ::= "DEFAULT" (Constant | "NULL" | "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER")
+<CollateClause> ::= "COLLATE" <CollateName>
+<ColumnConstraintDefinition> ::= [ <ConstraintNameDefinition> ] <ColumnConstraint> [ <ConstraintAttributes> ]
+<ConstraintNameDefinition> ::= "CONSTRAINT" <ConstraintName>
+<ConstraintAttributes> ::= <ConstraintCheckTime> [ [ "NOT" ] "DEFERRABLE" ] | [ "NOT" ] "DEFERRABLE" [ <ConstraintCheckTime> ]
+<ConstraintCheckTime> ::=  "INITIALLY" ( "DEFERRED" | "IMMEDIATE" )
+<ColumnConstraint> ::= "NOT" "NULL" | "UNIQUE" | "PRIMARY KEY" | <ReferencesClause> | <CheckClause>
+
+<TableConstraintDefinition> ::= [ <ConstraintNameDefinition> ] <TableConstraint> [ <ConstraintCheckTime> ]
+<TableConstraint> ::= <UniqueConstraintDefinition> | <ReferentialConstraintDefinition> | <CheckClause>
+<UniqueConstraintDefinition> ::= ("UNIQUE" | "PRIMARY" "KEY") "(" <ColumnNameList> ")"
+<ReferentialConstraintDefinition> ::= "FOREIGN" "KEY" "(" <ColumnNameList> ")" <ReferencesClause>
+
+<ReferencesClause> ::= "REFERENCES" <TableName> [ "(" <ColumnNameList> ")" ] [ "MATCH" ("FULL" | "PARTIAL") ] [ <ReferentialTriggeredAction> ]
+<ReferentialTriggeredAction> ::= <UpdateRule> [ <DeleteRule> ] | <DeleteRule> [ <UpdateRule> ]
+<UpdateRule> ::= "ON" "UPDATE" <ReferentialAction>
+<DeleteRule> ::= "ON" "DELETE" <ReferentialAction>
+<ReferentialAction> ::= "CASCADE" | "SET NULL" | "SET DEFAULT" | "NO ACTION"
+
+<CheckClause> ::= "CHECK" "(" <SearchCondition> ")"
+<SearchCondition> ::= <BooleanFactor> [ ("OR" | "AND") <SearchCondition> ]
+<BooleanFactor> ::= [ "NOT" ] <BooleanTest>
+<BooleanTest> ::= <BooleanPrimary> [ "IS"  [ "NOT" ] ( "TRUE" | "FALSE" | "UNKNOWN") ]
+<BooleanPrimary> ::= <Predicate> | "(" <SearchCondition> ")"
+<Predicate> ::= <RowValue> ( <ComparisonPredicate> | <BetweenPredicate> | <InPredicate> | <LikePredicate> | <NullPredicate> | <OverlapsPredicate> )
+<ComparisonPredicate> ::= <RowValue> <RationalOperator> <RowValue>
+<BetweenPredicate> ::= <RowValue> [ "NOT" ] "BETWEEN" <RowValue> "AND" <RowValue>
+
+<InPredicate> ::= <RowValue> [ "NOT" ] "IN" "(" <InPredicateValue> ")"
+<InPredicateValue> ::= <Expression> [ "," <InPredicateValue> ]
+<LikePredicate> ::= <RowValue> [ "NOT" ] "LIKE" <QuotedString> [ "ESCAPE" <QuotedString> ]
+<NullPredicate> ::= <RowValue> "IS" [ "NOT" ] "NULL"
+<OverlapsPredicate> ::= <RowValue> "OVERLAPS" <RowValue>
+
+<RowValue> ::= <RowValueElement> | "(" <RowValue> ")"
+<RowValueElement> ::= <Expression> | "NULL" | "DEFAULT"
+<Expression> ::= <Term> [ ( "+" | "-" | "||" ) <Expression> ]
+<Term> ::= <Factor> [ <BinaryOperator> <Term> ]
+<Factor> ::= [ ( "+" | "-" ) ] <Value> [ ( <TimeZone> | <IntervalQualifier> ) ]
+<Value> ::= <ColumnName> | <NumericConstant> | <QuotedString> | "(" <Expression> ")" | <UserValue> | <DateTimeValue> | <CastSpecification>
+<UserValue> ::= "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER"
+<DateTimeValue> ::= "CURRENT_DATE" | "CURRENT_TIME" [ <Precision> ] | "CURRENT_TIMESTAMP" [ <Precision> ]
+
+<CastSpecification> ::= "CAST" "(" <CastOperand> "AS" <CastTarget> ")"
+<CastOperand> ::= <Expression> | "NULL"
+<CastTarget> ::= <DataType> | <ColumnName>
+<TimeZone> ::= "AT" ( "LOCAL" | "TIME ZONE" <Value> )
+<IntervalQualifier> ::= <StartField> "TO" <EndField>
+<StartField> ::= ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" ) [ <Precision> ]
+<EndField> ::= ( "SECOND" [ <Precision> ] ) | <StartField>
+
+<DataType> ::= <CharacterType> | <NationalCharacterType> | <BitType> | <NumericType> | <DatetimeType>
+<CharacterType> ::= ("CHARACTER" | "CHAR" | "VARCHAR") [ <Length> ] [ "CHARACTER" "SET" <CharacterSetName> ]
+<NationalCharacterType> ::= ("NCHAR" | "NVARCHAR") [ <Length> ]
+<BitType> ::= "BOOLEAN"
+<NumericType> ::=  <NumericTypeValue> | <NumericTypeValueWithPrecision> | <NumericTypeValueWithScale>
+<NumericTypeValue> ::= "INTEGER" | "INT" | "SMALLINT" | "TINYINT" | "MEDIUMINT" | "BIGINT" | "REAL" | "DOUBLE"
+<NumericTypeValueWithPrecision> ::= "FLOAT" [ <Precision> ]
+<NumericTypeValueWithScale> ::= ( "NUMERIC" | "DECIMAL" | "DEC") [ <PrecisionWithScale> ]
+<DatetimeType> ::= "DATE" | ( "TIME" | "TIMESTAMP" | "DATETIME" ) [ <Precision> ] [ "WITH" "TIME" "ZONE" ]
+<PrecisionWithScale> ::= "(" <UnsignedIntegerConstant> [ "," <UnsignedIntegerConstant> ] ")"
+<Precision> ::= <Length>
+<Length> ::= "(" <UnsignedIntegerConstant> ")"
+
+<ColumnNameList> ::= <ColumnName> [ "," <ColumnNameList> ]
+<ColumnName> ::= <Identifier>
+<TableName> ::= <QualifiedName>
+<ConstraintName> ::= <QualifiedName>
+<CollateName> ::= <QualifiedName>
+<CharacterSetName> ::= <QualifiedName>
+<QualifiedName> ::= <Identifier> [ "." <Identifier> [ "." <Identifier> ] ]
+
+<Constant> ::= <StringConstant> | <DateTimeConstant> | <IntervalConstant> | <NumericConstant>
+<RationalOperator> ::= "<" | "<=" | ">" | ">=" | "=" | "<>" | "!="
+<BinaryOperator> ::= "+" | "-" | "*" | "/" | "%"
+
+// Fix for Intellij IDEA
+<Identifier> ::= <StringConstant>
+<QuotedString> ::= "Everything"
+<StringConstant> ::= "Alphanumeric value which starts with alpha character and value is not a keyword"
+<DateTimeConstant> ::= "Valid ISO date time format"
+<IntervalConstant> ::= "Valid ISO timestamp format"
+<NumericConstant> ::= "Numerical value"
+<UnsignedIntegerConstant> ::= "Non negative numerical value"
