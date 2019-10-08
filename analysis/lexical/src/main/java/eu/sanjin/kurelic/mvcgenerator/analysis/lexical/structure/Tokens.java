@@ -9,7 +9,7 @@ public class Tokens extends ArrayList<Token> {
   }
 
   public Tokens(Token... tokens) {
-      Collections.addAll(this, tokens);
+    Collections.addAll(this, tokens);
   }
 
   @Override
@@ -20,5 +20,4 @@ public class Tokens extends ArrayList<Token> {
     }
     return sb.toString();
   }
-
 }

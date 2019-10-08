@@ -86,5 +86,4 @@ public enum DataTypeToken {
   public static boolean isDateTime(String value) {
     return isType(DataTypeClass.DATE_TIME, value);
   }
-
 }
