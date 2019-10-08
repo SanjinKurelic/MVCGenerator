@@ -19,16 +19,14 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.*;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ColumnOperand;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ConstantOperand;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.DataTypeOperand;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.KeywordOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.*;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operator.Operator;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.reference.ReferenceAction;
 import org.javatuples.Pair;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -895,10 +893,61 @@ public class SyntaxParser {
       if (token.equalsToken(SpecialCharacterToken.PLUS)) {
         token.next(); // "+"
       }
-      factor = value();
+      factor = value(); // <Value>
     }
-    // TODO TimeZone IntervalQualifier
+    if (token.equalsToken(KeywordToken.AT) || isIntervalStartField()) {
+      BinaryPredicate castPredicate = new BinaryPredicate();
+      castPredicate.setFirstExpression(factor);
+      castPredicate.setOperator(new Operator(SpecialCharacterToken.CAST, token.getLineNumber()));
+
+      if (token.equalsToken(KeywordToken.AT)) {
+        castPredicate.setSecondExpression(timeZone()); // <TimeZone>
+      } else {
+        castPredicate.setSecondExpression(intervalQualifier()); // <IntervalQualifier>
+      }
+      return castPredicate;
+    }
     return factor;
+  }
+
+  // <TimeZone> ::= "AT" ( "LOCAL" | ( "TIME" "ZONE" <Value> ) )
+  private Operand timeZone() throws SyntaxException {
+    ZonedDataTypeOperand zonedDataTypeOperand = new ZonedDataTypeOperand(token.getLineNumber());
+    token.equalsOrThrow(KeywordToken.AT).next(); // "AT"
+    if (token.equalsToken(KeywordToken.LOCAL)) {
+      zonedDataTypeOperand.setZone(new KeywordOperand(token.getToken())); // "LOCAL"
+    } else {
+      token.equalsOrThrow(DataTypeToken.TIME).next(); // "TIME"
+      token.equalsOrThrow(KeywordToken.ZONE).next(); // "ZONE"
+      zonedDataTypeOperand.setZone(value());
+    }
+    return zonedDataTypeOperand;
+  }
+
+  // <IntervalQualifier> ::= <StartField> "TO" <EndField>
+  // <StartField> ::= ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" ) [ <Precision> ]
+  // <EndField> ::= ( "SECOND" [ <Precision> ] ) | <StartField>
+  private Operand intervalQualifier() throws SyntaxException {
+    IntervalDataTypeOperand intervalDataTypeOperand = new IntervalDataTypeOperand(token.getLineNumber());
+    if (!isIntervalStartField()) {
+      throw new InvalidIntervalTypeSyntaxException(token.getLineNumber());
+    }
+    intervalDataTypeOperand.setFrom(token.getToken());
+    token.next(); // <StartField>
+    token.equalsOrThrow(KeywordToken.TO).next(); // "TO"
+    if (!token.equalsToken(KeywordToken.SECOND) && !isIntervalStartField()) {
+      throw new InvalidIntervalTypeSyntaxException(token.getLineNumber());
+    }
+    intervalDataTypeOperand.setTo(token.getToken());
+    token.next(); // <EndField>
+
+    return intervalDataTypeOperand;
+  }
+
+  private boolean isIntervalStartField() throws SyntaxException {
+    return token.equalsToken(KeywordToken.YEAR) || token.equalsToken(KeywordToken.MONTH)
+      || token.equalsToken(KeywordToken.DAY) || token.equalsToken(KeywordToken.HOUR)
+      || token.equalsToken(KeywordToken.MINUTE);
   }
 
   // <Value> ::= <ColumnName> | <NumericValue> | <QuotedString> | "(" <ValueExpression> ")" | <UserValue> | <DateTimeValue> | <CastSpecification>

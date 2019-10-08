@@ -3,8 +3,6 @@ package eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.el
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
-import java.util.Objects;
-
 public class DataType {
 
   private static final String TYPE_TAG = "Type";

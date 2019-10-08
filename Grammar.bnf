@@ -51,7 +51,7 @@
 <CastSpecification> ::= "CAST" "(" <CastOperand> "AS" <CastTarget> ")"
 <CastOperand> ::= <Expression> | "NULL"
 <CastTarget> ::= <DataType> | <ColumnName>
-<TimeZone> ::= "AT" ( "LOCAL" | "TIME ZONE" <Value> )
+<TimeZone> ::= "AT" ( "LOCAL" | ( "TIME" "ZONE" <Value> ) )
 <IntervalQualifier> ::= <StartField> "TO" <EndField>
 <StartField> ::= ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" ) [ <Precision> ]
 <EndField> ::= ( "SECOND" [ <Precision> ] ) | <StartField>
