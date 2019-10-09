@@ -12,15 +12,23 @@ public class SemanticAttributeTable {
     tableAttributes = new HashMap<>();
   }
 
-  public boolean hasTableAttribute(TableAttribute tableAttribute) {
-    return tableAttributes.containsKey(tableAttribute.getTableName().getValue());
+  public boolean hasTable(TableAttribute tableAttribute) {
+    return hasTable(tableAttribute.getTableName().getValue());
   }
 
-  public void addTableAttribute(TableAttribute tableAttribute) {
+  public boolean hasTable(String tableName) {
+    return tableAttributes.containsKey(tableName);
+  }
+
+  public void addTable(TableAttribute tableAttribute) {
     tableAttributes.put(tableAttribute.getTableName().getValue(), tableAttribute);
   }
 
-  public HashMap<String, TableAttribute> getTableAttributes() {
+  public TableAttribute getTable(String tableName) {
+    return tableAttributes.get(tableName);
+  }
+
+  public HashMap<String, TableAttribute> getTables() {
     return tableAttributes;
   }
 }

@@ -13,6 +13,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.*;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class SemanticParser {
@@ -36,10 +37,10 @@ public class SemanticParser {
     for (CreateDefinition createDefinition : syntaxTree.getCreateDefinitions()) {
       if (createDefinition instanceof CreateTableDefinition) {
         tableAttribute = getTableAttribute((CreateTableDefinition) createDefinition);
-        if (semanticAttributeTable.hasTableAttribute(tableAttribute)) {
+        if (semanticAttributeTable.hasTable(tableAttribute)) {
           throw new TableAlreadyDefinedSemanticException(tableAttribute.getTableName());
         }
-        semanticAttributeTable.addTableAttribute(tableAttribute);
+        semanticAttributeTable.addTable(tableAttribute);
       }
     }
   }
@@ -88,6 +89,7 @@ public class SemanticParser {
 
   /**
    * Fill column attributes
+   *
    * @param columnDefinition - syntax tree element from which we use data
    */
   private ColumnAttribute getColumnAttribute(ColumnDefinition columnDefinition) throws SemanticException {
@@ -103,8 +105,9 @@ public class SemanticParser {
 
   /**
    * Copy check constraint from column definition to table definition, if column has any
+   *
    * @param tableAttribute - table scope
-   * @param columnName - column name for semantic errors
+   * @param columnName     - column name for semantic errors
    * @param constraintList - list of column constraints - only check constraints are considered
    * @throws SemanticException - if there are multiple check constraint
    */
@@ -139,9 +142,10 @@ public class SemanticParser {
 
   /**
    * Set column attribute information about constraints (primary, unique, not null etc)
+   *
    * @param columnAttribute - column in which we fill info
-   * @param constraintList - list of constraints
-   * @param referenceIndex - used when we define reference constraint in table scope
+   * @param constraintList  - list of constraints
+   * @param referenceIndex  - used when we define reference constraint in table scope
    * @throws SemanticException - if we define multiple reference clause on column
    */
   private void fillConstraintAttributes(ColumnAttribute columnAttribute, ConstraintList constraintList, int referenceIndex) throws SemanticException {
@@ -169,12 +173,33 @@ public class SemanticParser {
     }
   }
 
+  /**
+   * Analyze all foreign keys
+   * @throws SemanticException - table or column destination doesn't exists
+   */
   private void analyzeForeignKeys() throws SemanticException {
-
+    String tableName, columnName;
+    // For every table and every column that is reference key check if table/column destination exists
+    for (TableAttribute table : semanticAttributeTable.getTables().values()) {
+      for (ColumnAttribute column : table.getColumns().values()) {
+        if (column.isForeign()) {
+          tableName = column.getForeignTable().getValue();
+          columnName = column.getForeignColumn().getValue();
+          // Does table exists
+          if (!semanticAttributeTable.hasTable(tableName)) {
+            throw new TableUndefinedSemanticException(column.getForeignTable());
+          }
+          // Does column in that table exists
+          if (!semanticAttributeTable.getTable(tableName).hasColumn(columnName)) {
+            throw new ColumnUndefinedSemanticException(column.getForeignColumn());
+          }
+        }
+      }
+    }
   }
 
   private void analyzeCheckClause() throws SemanticException {
-
+    // TODO check chekc clauses type and if column exists, for every table
   }
 
   public SemanticAttributeTable getSemanticAttributeTable() {
