@@ -2,7 +2,6 @@ package eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.el
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Tokens;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.Constraint;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
 public class TableConstraintDefinition implements TableElement {
 
