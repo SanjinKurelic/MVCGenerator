@@ -7,6 +7,13 @@ import java.util.ArrayList;
 
 public class ConstraintList extends ArrayList<Constraint> {
 
+  public ConstraintList() {
+  }
+
+  public ConstraintList(Constraint constraint) {
+    this.add(constraint);
+  }
+
   public String toString(Token columnName) {
     StringBuilder xml = new StringBuilder();
     for(Constraint constraint : this) {

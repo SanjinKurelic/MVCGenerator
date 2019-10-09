@@ -8,7 +8,7 @@ public abstract class Constraint {
 
   static final String COLUMN_TAG = "Column";
 
-  private String getClassName() {
+  public String getClassName() {
     return super.getClass().getSimpleName();
   }
 
