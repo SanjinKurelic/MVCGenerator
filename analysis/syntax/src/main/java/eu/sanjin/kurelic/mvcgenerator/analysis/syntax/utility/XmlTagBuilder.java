@@ -15,7 +15,7 @@ public class XmlTagBuilder {
 
   // utils
   private static String getIdent(String value) {
-    return "\t".repeat(Math.max(0, ident)) + value;
+    return "  ".repeat(Math.max(0, ident)) + value;
   }
 
   // tags
