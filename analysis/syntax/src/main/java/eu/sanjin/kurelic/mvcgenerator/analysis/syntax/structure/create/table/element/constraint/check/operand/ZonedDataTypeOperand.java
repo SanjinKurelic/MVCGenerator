@@ -7,7 +7,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 
 public class ZonedDataTypeOperand extends DataTypeOperand {
 
-  public static final String ZONED_DATE_QUALIFIER = "ZONED_DATE";
+  private static final String ZONED_DATE_QUALIFIER = "ZONED_DATE";
   private Expression zone;
 
   public ZonedDataTypeOperand(int lineNumber) {

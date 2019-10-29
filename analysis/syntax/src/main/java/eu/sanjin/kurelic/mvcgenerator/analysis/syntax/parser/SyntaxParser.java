@@ -26,7 +26,6 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.reference.ReferenceAction;
 import org.javatuples.Pair;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

@@ -4,8 +4,7 @@ public class UnexpectedEndOfFileSyntaxException extends SyntaxException {
 
   private static final String ERROR_STRING = "Unexpected end of file";
 
-  @Override
-  public String getMessage() {
-    return ERROR_STRING;
+  public UnexpectedEndOfFileSyntaxException() {
+    super(ERROR_STRING);
   }
 }

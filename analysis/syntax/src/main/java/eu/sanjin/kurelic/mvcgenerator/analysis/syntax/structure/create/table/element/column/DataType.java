@@ -45,5 +45,4 @@ public class DataType {
     xml += XmlTagBuilder.surroundToken(scale, SCALE_TAG);
     return xml + XmlTagBuilder.getEndTag(this);
   }
-
 }

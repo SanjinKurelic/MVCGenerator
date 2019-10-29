@@ -18,11 +18,11 @@ public class TokenSupplier {
     clear();
   }
 
-  public void clear() {
+  void clear() {
     index = 0;
   }
 
-  public TokenSupplier equalsOrThrow(Enum<?> token) throws SyntaxException {
+  TokenSupplier equalsOrThrow(Enum<?> token) throws SyntaxException {
     String value = getValue().toLowerCase();
     if (!value.equals(token.toString())) {
       throw new UnexpectedTokenSyntaxException(getToken(), token.toString());
@@ -30,11 +30,12 @@ public class TokenSupplier {
     return this;
   }
 
-  public boolean equalsToken(Enum<?> token) throws SyntaxException {
+  boolean equalsToken(Enum<?> token) throws SyntaxException {
     return getValue().toLowerCase().equals(token.toString());
   }
 
-  public boolean hasNextToken(Enum<?> token) throws SyntaxException {
+  @SuppressWarnings("SameParameterValue")
+  boolean hasNextToken(Enum<?> token) throws SyntaxException {
     if (!hasNext()) {
       return false;
     }
@@ -61,14 +62,6 @@ public class TokenSupplier {
     }
   }
 
-  public Token getNextToken() throws SyntaxException {
-    try {
-      return tokens.get(index + 1);
-    } catch (IndexOutOfBoundsException e) {
-      throw new SyntaxException();
-    }
-  }
-
   private int getLastLineNumber() {
     return tokens.get(tokens.size() - 1).getLineNumber();
   }
@@ -81,12 +74,11 @@ public class TokenSupplier {
     }
   }
 
-  public void next() {
+  void next() {
     index++;
   }
 
-  public boolean hasNext() {
+  boolean hasNext() {
     return index < size;
   }
-
 }

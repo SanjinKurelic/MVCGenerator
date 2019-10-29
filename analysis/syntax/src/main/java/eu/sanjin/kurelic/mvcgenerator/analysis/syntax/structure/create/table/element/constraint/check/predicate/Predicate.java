@@ -8,5 +8,4 @@ public interface Predicate extends Expression {
   Operator getOperator();
 
   void setOperator(Operator operator);
-
 }

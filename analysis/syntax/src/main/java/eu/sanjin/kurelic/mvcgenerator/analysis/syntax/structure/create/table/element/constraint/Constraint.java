@@ -8,7 +8,7 @@ public abstract class Constraint {
 
   static final String COLUMN_TAG = "Column";
 
-  public String getClassName() {
+  private String getClassName() {
     return super.getClass().getSimpleName();
   }
 
@@ -28,5 +28,4 @@ public abstract class Constraint {
   public String toString() {
     return XmlTagBuilder.getSelfClosingTags(getClassName());
   }
-
 }

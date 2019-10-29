@@ -12,6 +12,7 @@ class SyntaxAnalyzerTest {
   @BeforeEach
   void setUp() {
     lexicalAnalyzer = new LexicalAnalyzer();
+    syntaxAnalyzer = new SyntaxAnalyzer();
   }
 
   @Test
@@ -19,8 +20,7 @@ class SyntaxAnalyzerTest {
     String sql = "CREATE TABLE Student (id INT CHECK(id > 5 OR id BETWEEN 0 AND 1));";
     try {
       lexicalAnalyzer.parse(sql);
-      syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer.getTokens());
-      syntaxAnalyzer.parse();
+      syntaxAnalyzer.parse(lexicalAnalyzer.getTokens());
       System.out.println(syntaxAnalyzer.getSyntaxTree());
     } catch (Exception e) {
       System.err.println(e.getMessage());
@@ -41,12 +41,10 @@ class SyntaxAnalyzerTest {
     code.append(");");
     try {
       lexicalAnalyzer.parse(code.toString());
-      syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer.getTokens());
-      syntaxAnalyzer.parse();
+      syntaxAnalyzer.parse(lexicalAnalyzer.getTokens());
       System.out.println(syntaxAnalyzer.getSyntaxTree());
     } catch (Exception e) {
       System.err.println(e.getMessage());
     }
   }
-
 }

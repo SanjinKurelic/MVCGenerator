@@ -9,16 +9,12 @@ public class SemanticAnalyzer {
 
   private SemanticParser semanticParser;
 
-  public SemanticAnalyzer(SyntaxTree syntaxTree) {
+  public void parse(SyntaxTree syntaxTree) throws SemanticException {
     semanticParser = new SemanticParser(syntaxTree);
-  }
-
-  public void parse() throws SemanticException {
-      semanticParser.parse();
+    semanticParser.parse();
   }
 
   public SemanticAttributeTable getSemanticAttributeTable() {
-      return semanticParser.getSemanticAttributeTable();
+    return semanticParser.getSemanticAttributeTable();
   }
-
 }

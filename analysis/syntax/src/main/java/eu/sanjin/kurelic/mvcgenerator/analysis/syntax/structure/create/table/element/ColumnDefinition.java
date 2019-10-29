@@ -61,5 +61,4 @@ public class ColumnDefinition implements TableElement {
     xml += XmlTagBuilder.getEndTag(this);
     return xml;
   }
-
 }

@@ -35,5 +35,4 @@ public class TableDefinition implements Serializable {
     xml += tableElementList;
     return xml + XmlTagBuilder.getEndTag(this);
   }
-
 }

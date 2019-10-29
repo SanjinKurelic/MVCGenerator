@@ -8,5 +8,4 @@ public interface Operand extends Expression {
   Token getOperand();
 
   void setOperand(Token operand);
-
 }

@@ -31,4 +31,14 @@ public class SemanticAttributeTable {
   public HashMap<String, TableAttribute> getTables() {
     return tableAttributes;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder stringBuilder = new StringBuilder();
+    tableAttributes.forEach((tableName, tableAttribute) -> {
+      stringBuilder.append(tableAttribute.toString());
+      stringBuilder.append("\n\n");
+    });
+    return stringBuilder.toString();
+  }
 }

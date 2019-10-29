@@ -16,5 +16,4 @@ public class TableElementList extends ArrayList<TableElement> {
     sb.append(XmlTagBuilder.getEndTag(this));
     return sb.toString();
   }
-
 }

@@ -4,7 +4,6 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.CreateDef
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SyntaxTree implements Serializable {
@@ -29,5 +28,4 @@ public class SyntaxTree implements Serializable {
     sb.append(XmlTagBuilder.getEndTag(this));
     return sb.toString();
   }
-
 }

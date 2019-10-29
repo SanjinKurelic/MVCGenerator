@@ -8,20 +8,14 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.SyntaxTree;
 
 public class SyntaxAnalyzer {
 
-  private TokenSupplier tokenSupplier;
   private SyntaxParser syntaxParser;
 
-  public SyntaxAnalyzer(Tokens tokens) {
-    tokenSupplier = new TokenSupplier(tokens);
-    syntaxParser = new SyntaxParser(tokenSupplier);
-  }
-
-  public void parse() throws SyntaxException {
+  public void parse(Tokens tokens) throws SyntaxException {
+    syntaxParser = new SyntaxParser(new TokenSupplier(tokens));
     syntaxParser.parse();
   }
 
   public SyntaxTree getSyntaxTree() {
     return syntaxParser.getSyntaxTree();
   }
-
 }

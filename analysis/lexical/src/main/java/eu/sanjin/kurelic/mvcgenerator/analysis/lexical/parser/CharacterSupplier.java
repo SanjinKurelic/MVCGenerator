@@ -34,15 +34,15 @@ public class CharacterSupplier {
     return hasCharacter(currentIndex);
   }
 
-  public boolean hasNextCharacter() {
+  private boolean hasNextCharacter() {
     return hasCharacter(currentIndex + 1);
   }
 
-  public boolean isCharacter(char character) {
+  boolean isCharacter(char character) {
     return hasCharacter() && character == getCharacter();
   }
 
-  public boolean isNextCharacter(char character) {
+  boolean isNextCharacter(char character) {
     return hasNextCharacter() && character == peekCharacter();
   }
 
@@ -62,7 +62,7 @@ public class CharacterSupplier {
     return getCharacter(currentIndex);
   }
 
-  public char peekCharacter() {
+  private char peekCharacter() {
     return getCharacter(currentIndex + 1);
   }
 
@@ -71,7 +71,7 @@ public class CharacterSupplier {
   }
 
   // Setters
-  public int nextCharacter() {
+  int nextCharacter() {
     currentIndex++;
     if (isCharacter('\n')) {
       lineNumber++;
@@ -79,7 +79,7 @@ public class CharacterSupplier {
     return currentIndex;
   }
 
-  public void skipCharacter() {
+  void skipCharacter() {
     beginIndex = nextCharacter();
   }
 }

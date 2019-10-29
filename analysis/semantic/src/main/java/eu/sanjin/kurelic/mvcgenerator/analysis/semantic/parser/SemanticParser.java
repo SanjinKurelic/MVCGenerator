@@ -11,9 +11,10 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.TableConstraintDefinition;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.TableElement;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.*;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class SemanticParser {
@@ -96,15 +97,15 @@ public class SemanticParser {
     ColumnAttribute columnAttribute = new ColumnAttribute();
 
     columnAttribute.setColumnName(columnDefinition.getColumnName());
-    columnAttribute.setDataType(columnAttribute.getDataType());
-    columnAttribute.setDefaultValue(columnAttribute.getDefaultValue());
+    columnAttribute.setDataType(columnDefinition.getDataType());
+    columnAttribute.setDefaultValue(columnDefinition.getDefaultValue());
     fillConstraintAttributes(columnAttribute, columnDefinition.getConstraintList());
 
     return columnAttribute;
   }
 
   /**
-   * Copy check constraint from column definition to table definition, if column has any
+   * Copy CHECK constraint from column definition to table definition, if column has any
    *
    * @param tableAttribute - table scope
    * @param columnName     - column name for semantic errors
@@ -116,14 +117,14 @@ public class SemanticParser {
     if (constraintList.stream().noneMatch(CheckConstraint.class::isInstance)) {
       return;
     }
-    Stream<CheckConstraint> checkConstraintStream = constraintList.stream()
+    Supplier<Stream<CheckConstraint>> checkConstraintStreamSupplier = () -> constraintList.stream()
         .filter(CheckConstraint.class::isInstance)
         .map(CheckConstraint.class::cast);
     // Only one check clause is allowed per column constraint definitions
-    if (checkConstraintStream.count() != 1) {
+    if (checkConstraintStreamSupplier.get().count() != 1) {
       throw new CheckConstraintAlreadyDefinedSemanticException(columnName);
     }
-    tableAttribute.addCheckExpression(checkConstraintStream.findFirst().orElseThrow().getCheckExpression());
+    tableAttribute.addCheckExpression(checkConstraintStreamSupplier.get().findFirst().orElseThrow().getCheckExpression());
   }
 
   /**
@@ -149,22 +150,20 @@ public class SemanticParser {
    * @throws SemanticException - if we define multiple reference clause on column
    */
   private void fillConstraintAttributes(ColumnAttribute columnAttribute, ConstraintList constraintList, int referenceIndex) throws SemanticException {
-    Stream<Constraint> constraintStream = constraintList.stream();
-
-    columnAttribute.setNotNull(constraintStream.anyMatch(PrimaryKeyConstraint.class::isInstance));
-    columnAttribute.setNotNull(constraintStream.anyMatch(UniqueConstraint.class::isInstance));
-    columnAttribute.setNotNull(constraintStream.anyMatch(NotNullConstraint.class::isInstance));
+    columnAttribute.setNotNull(constraintList.stream().anyMatch(PrimaryKeyConstraint.class::isInstance));
+    columnAttribute.setNotNull(constraintList.stream().anyMatch(UniqueConstraint.class::isInstance));
+    columnAttribute.setNotNull(constraintList.stream().anyMatch(NotNullConstraint.class::isInstance));
 
     // Reference constraint
-    if (constraintStream.anyMatch(ReferenceConstraint.class::isInstance)) {
-      Stream<ReferenceConstraint> referenceConstraintStream = constraintStream
+    if (constraintList.stream().anyMatch(ReferenceConstraint.class::isInstance)) {
+      Supplier<Stream<ReferenceConstraint>> referenceConstraintStreamSupplier = () -> constraintList.stream()
           .filter(ReferenceConstraint.class::isInstance)
           .map(ReferenceConstraint.class::cast);
       // Can't redefine reference constraint
-      if (columnAttribute.isForeign() || (referenceConstraintStream.count() != 1)) {
+      if (columnAttribute.isForeign() || (referenceConstraintStreamSupplier.get().count() != 1)) {
         throw new ReferenceConstraintAlreadyDefinedSemanticException(columnAttribute.getColumnName());
       }
-      ReferenceConstraint constraint = referenceConstraintStream.findFirst().orElseThrow();
+      ReferenceConstraint constraint = referenceConstraintStreamSupplier.get().findFirst().orElseThrow();
       columnAttribute.setForeign(true);
       columnAttribute.setForeignColumn(constraint.getColumnList().get(referenceIndex));
       columnAttribute.setForeignTable(constraint.getTableName());
@@ -199,6 +198,11 @@ public class SemanticParser {
   }
 
   private void analyzeCheckClause() throws SemanticException {
+    semanticAttributeTable.getTables().forEach((tableName, tableAttribute) -> {
+      tableAttribute.getCheckAttribute().getCheckExpressions().forEach(expression -> {
+        
+      });
+    });
     // TODO check chekc clauses type and if column exists, for every table
   }
 

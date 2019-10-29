@@ -51,4 +51,22 @@ public class TableAttribute {
   public ColumnAttribute getColumn(String columnName) {
     return columns.get(columnName);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("=".repeat(80)).append("\n");
+    stringBuilder.append("= ").append(tableName.getValue()).append("\n");
+    stringBuilder.append("=".repeat(80)).append("\n");
+
+    columns.forEach((columnName, column) -> {
+      stringBuilder.append(column.toString()).append("\n");
+    });
+
+    stringBuilder.append("=".repeat(80)).append("\n");
+    stringBuilder.append(checkAttribute.toString());
+    stringBuilder.append("=".repeat(80));
+
+    return stringBuilder.toString();
+  }
 }

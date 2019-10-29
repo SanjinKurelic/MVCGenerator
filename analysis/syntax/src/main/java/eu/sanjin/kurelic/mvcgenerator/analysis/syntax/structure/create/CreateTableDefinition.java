@@ -23,5 +23,4 @@ public class CreateTableDefinition implements Serializable, CreateDefinition {
     xml += tableDefinition;
     return xml + XmlTagBuilder.getEndTag(this);
   }
-
 }

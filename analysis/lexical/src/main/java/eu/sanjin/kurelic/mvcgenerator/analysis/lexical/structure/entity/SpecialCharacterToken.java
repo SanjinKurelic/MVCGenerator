@@ -66,10 +66,6 @@ public enum SpecialCharacterToken {
     return false;
   }
 
-  public boolean equals(Token token) {
-    return toString().equals(token.getValue().toLowerCase());
-  }
-
   public static boolean isType(SpecialCharacterClass type, String value) {
     for (SpecialCharacterToken t : values()) {
       if (t.toChar() == value.charAt(0)) {
@@ -89,14 +85,6 @@ public enum SpecialCharacterToken {
 
   public static boolean isCompound(String value) {
     return isType(SpecialCharacterClass.COMPOUND, value);
-  }
-
-  public static boolean isDelimiter(String value) {
-    return isType(SpecialCharacterClass.DELIMITER, value);
-  }
-
-  public static boolean isStringManipulation(String value) {
-    return isType(SpecialCharacterClass.STRING_MANIPULATION, value);
   }
 
   public static SpecialCharacterToken toSpecialCharacterToken(String value) {

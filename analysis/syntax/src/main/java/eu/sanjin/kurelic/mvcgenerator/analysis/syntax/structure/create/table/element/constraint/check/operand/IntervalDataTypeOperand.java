@@ -6,7 +6,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 
 public class IntervalDataTypeOperand extends DataTypeOperand {
 
-  public static final String INTERVAL_QUALIFIER = "INTERVAL";
+  private static final String INTERVAL_QUALIFIER = "INTERVAL";
   private Token from;
   private Token to;
 

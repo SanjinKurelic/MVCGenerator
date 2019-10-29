@@ -13,13 +13,9 @@ public class LexicalAnalyzer {
 
   private Tokens tokens;
 
-  // Create lexical table structure and get token definition
-  public LexicalAnalyzer() {
-    tokens = new Tokens();
-  }
-
   // Get token reader and read all tokens
   public void parse(String code) throws LexicalException {
+    tokens = new Tokens();
     if (Objects.isNull(code)) {
       return;
     }

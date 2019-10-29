@@ -11,7 +11,7 @@ public enum LexicalSpecialCharacters {
 
   private char value;
 
-  private LexicalSpecialCharacters(char value) {
+  LexicalSpecialCharacters(char value) {
     this.value = value;
   }
 

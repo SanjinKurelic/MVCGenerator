@@ -19,4 +19,15 @@ public class CheckAttribute {
   public ArrayList<Expression> getCheckExpressions() {
     return checkExpressions;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("<check>\n");
+    
+    checkExpressions.forEach(stringBuilder::append);
+    stringBuilder.append("<\\check>\n");
+
+    return stringBuilder.toString();
+  }
 }

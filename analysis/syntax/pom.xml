@@ -27,6 +27,4 @@
             <version>${mvc.generator.version.javatuples}</version>
         </dependency>
     </dependencies>
-
-
 </project>

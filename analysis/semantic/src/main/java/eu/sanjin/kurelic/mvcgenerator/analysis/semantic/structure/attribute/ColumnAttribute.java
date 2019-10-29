@@ -109,4 +109,36 @@ public class ColumnAttribute {
   public void setForeignUpdateAction(ReferenceAction foreignUpdateAction) {
     this.foreignUpdateAction = foreignUpdateAction;
   }
+
+  @Override
+  public String toString() {
+    String columnDefinition = columnName.getValue() + " " + dataType.getType().getValue();
+    // Data type length, preci
+    if (!Objects.isNull(dataType.getPrecisionOrLength())) {
+      columnDefinition += " (" + dataType.getPrecisionOrLength().getValue();
+      if (!Objects.isNull(dataType.getScale())) {
+        columnDefinition += ", " + dataType.getScale().getValue();
+      }
+      columnDefinition += ")";
+    }
+
+    if (!Objects.isNull(defaultValue)) {
+      columnDefinition += " DEFAULT " + defaultValue.getValue();
+    }
+    columnDefinition += (primary ? " PRIMARY KEY" : "");
+    columnDefinition += (unique ? " UNIQUE" : "");
+    columnDefinition += (notNull ? " NOT NULL" : "");
+
+    if (foreign) {
+      columnDefinition += " REFERENCES " + foreignTable.getValue() + " (" + foreignColumn.getValue() + ")";
+      if (!Objects.isNull(foreignUpdateAction)) {
+        columnDefinition += " ON UPDATE " + foreignUpdateAction.name().replace('_', ' ');
+      }
+      if (!Objects.isNull(foreignDeleteAction)) {
+        columnDefinition += " ON DELETE " + foreignDeleteAction.name().replace('_', ' ');
+      }
+    }
+
+    return columnDefinition;
+  }
 }

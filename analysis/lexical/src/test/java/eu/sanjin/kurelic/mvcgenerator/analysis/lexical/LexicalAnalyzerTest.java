@@ -30,10 +30,10 @@ class LexicalAnalyzerTest {
 
   @Test
   void smallValidTest() {
-    String input = "CREATE TABLE schema.table.column(\n" +
+    String input = "CREATE TABLE Student(\n" +
       "id INT PRIMARY KEY,\n" +
       "name VARCHAR(50) DEFAULT '' NOT NULL,\n" +
-      "address SMALLINT REFERENCES \"table\" (column1, column2),\n" +
+      "addressId SMALLINT REFERENCES \"Address\" (id)\n" +
       ");\n";
     Assertions.assertDoesNotThrow(() -> lexicalAnalyzer.parse(input));
     System.out.println(lexicalAnalyzer.getTokens());
