@@ -192,6 +192,11 @@ public class SemanticParser {
           if (!semanticAttributeTable.getTable(tableName).hasColumn(columnName)) {
             throw new ColumnUndefinedSemanticException(column.getForeignColumn());
           }
+          // Check if data type is correct
+          ColumnAttribute foreignColumn = semanticAttributeTable.getTable(tableName).getColumn(columnName);
+          if (!foreignColumn.getDataType().getType().getValue().equals(column.getDataType().getType().getValue())) {
+            throw new TypeMismatchSemanticException(column, foreignColumn);
+          }
         }
       }
     }
