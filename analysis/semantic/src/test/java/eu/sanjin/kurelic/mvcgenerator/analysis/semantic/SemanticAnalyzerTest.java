@@ -42,6 +42,9 @@ class SemanticAnalyzerTest {
     code.append("grade FLOAT DEFAULT 0.0 CHECK (grade BETWEEN 1 AND 5),").append("\n");
     code.append("address INT,").append("\n");
     code.append("CONSTRAINT FK_address FOREIGN KEY (address) REFERENCES \"Address Table\" (id)").append("\n");
+    code.append(");").append("\n");
+    code.append("CREATE TABLE \"Address Table\"(").append("\n");
+    code.append("id INT PRIMARY KEY").append("\n");
     code.append(");");
     try {
       lexicalAnalyzer.parse(code.toString());
