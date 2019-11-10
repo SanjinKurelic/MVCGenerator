@@ -25,6 +25,8 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.PrimaryKeyConstraint;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.ReferenceConstraint;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.UniqueConstraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -218,7 +220,13 @@ public class SemanticParser {
   private void analyzeCheckClause() throws SemanticException {
     semanticAttributeTable.getTables().forEach((tableName, tableAttribute) -> {
       tableAttribute.getCheckAttribute().getCheckExpressions().forEach(expression -> {
-        
+        if (expression instanceof BinaryPredicate) {
+
+        } else if (expression instanceof UnaryPredicate) {
+
+        } else {
+          throw new UnsupportedOperationException();
+        }
       });
     });
     // TODO check check clauses type and if column exists, for every table

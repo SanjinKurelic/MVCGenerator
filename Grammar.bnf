@@ -5,7 +5,7 @@
 <TableElement> ::= <ColumnDefinition> | <TableConstraintDefinition>
 <ColumnDefinition> ::= <ColumnName> <DataType> [ <DefaultClause> ] [ <ColumnConstraintDefinitions> ] [ <CollateClause> ]
 <ColumnConstraintDefinitions> ::= <ColumnConstraintDefinition> [ <ColumnConstraintDefinitions> ]
-<DefaultClause> ::= "DEFAULT" (Constant | "NULL" | "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER")
+<DefaultClause> ::= "DEFAULT" ( <Constant> | "NULL" | "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER" )
 <CollateClause> ::= "COLLATE" <CollateName>
 <ColumnConstraintDefinition> ::= [ <ConstraintNameDefinition> ] <ColumnConstraint> [ <ConstraintAttributes> ]
 <ConstraintNameDefinition> ::= "CONSTRAINT" <ConstraintName>
