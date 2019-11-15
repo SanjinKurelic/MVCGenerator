@@ -1,6 +1,7 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.semantic.parser;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
+import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.SpecialCharacterToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.*;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.*;
@@ -12,6 +13,12 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.TableElement;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.*;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ColumnOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ConstantOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.Operand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.Predicate;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -200,10 +207,58 @@ public class SemanticParser {
   private void analyzeCheckClause() throws SemanticException {
     semanticAttributeTable.getTables().forEach((tableName, tableAttribute) -> {
       tableAttribute.getCheckAttribute().getCheckExpressions().forEach(expression -> {
-        
+        if (analyzeCheckPredicate()) {
+
+        }
       });
     });
     // TODO check chekc clauses type and if column exists, for every table
+  }
+
+  private void analyzeCheckExpression(Expression expression) {
+    if (expression instanceof Predicate) {
+      analyzeCheckPredicate((Predicate) expression);
+    } else if (expression instanceof Operand) {
+      analyzeCheckOperand((Operand) expression);
+    }
+  }
+
+  private void analyzeCheckPredicate(Predicate predicate) {
+    if (predicate instanceof UnaryPredicate) {
+      analyzeUnaryPredicate((UnaryPredicate) predicate);
+    } else if (predicate instanceof BinaryPredicate) {
+      analyzeBinaryPredicate((BinaryPredicate) predicate);
+    }
+  }
+
+  private void analyzeCheckOperand(Operand operand) {
+    if (operand instanceof ConstantOperand) {
+      ((ConstantOperand) operand).getOperand().getTokenType()
+    }
+    ((ColumnOperand)operand).
+  }
+
+  private void analyzeUnaryPredicate(UnaryPredicate predicate) {
+    switch (predicate.getOperator().getOperator()) {
+      case NOT:
+      case PLUS:
+      case MINUS:
+    }
+  }
+
+  private void analyzeBinaryPredicate(BinaryPredicate predicate) {
+    switch (predicate.getOperator().getOperator().getRootType()) {
+      case BINARY:
+      case RATIONAL:
+      case STRING_MANIPULATION:
+      case COMPOUND:
+        switch (predicate.getOperator().getOperator()) {
+          case NOT_LIKE:
+          case LIKE:
+          case CONCAT:
+          case OVERLAPS:
+        }
+    }
   }
 
   public SemanticAttributeTable getSemanticAttributeTable() {
