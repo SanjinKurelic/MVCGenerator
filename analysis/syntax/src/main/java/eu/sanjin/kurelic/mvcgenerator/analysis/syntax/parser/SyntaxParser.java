@@ -963,7 +963,8 @@ public class SyntaxParser {
       value = new KeywordOperand(token.getToken());
       token.next(); // "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER"
     } else if (token.getToken().getTokenType() == TokenType.CONSTANT_INTEGER_VALUE
-      || token.getToken().getTokenType() == TokenType.CONSTANT_REAL_NUMBER_VALUE) {
+      || token.getToken().getTokenType() == TokenType.CONSTANT_REAL_NUMBER_VALUE
+      || token.getToken().getTokenType() == TokenType.CONSTANT_QUOTED_VALUE) {
       value = new ConstantOperand(token.getToken());
       token.next(); // <NumericConstant>
     } else if (token.equalsToken(KeywordToken.CAST)) {

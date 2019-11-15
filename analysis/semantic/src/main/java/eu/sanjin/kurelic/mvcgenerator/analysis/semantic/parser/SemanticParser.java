@@ -1,10 +1,19 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.semantic.parser;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CheckConstraintAlreadyDefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnAlreadyDefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnUndefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ReferenceConstraintAlreadyDefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.SemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableAlreadyDefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableUndefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TypeMismatchSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.SpecialCharacterToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.*;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.*;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.TableAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.SyntaxTree;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.CreateDefinition;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.CreateTableDefinition;
@@ -18,6 +27,15 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.Operand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.Predicate;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.CheckConstraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.Constraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.ConstraintList;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.NotNullConstraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.PrimaryKeyConstraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.ReferenceConstraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.UniqueConstraint;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
 
 import java.util.ArrayList;
@@ -199,6 +217,11 @@ public class SemanticParser {
           if (!semanticAttributeTable.getTable(tableName).hasColumn(columnName)) {
             throw new ColumnUndefinedSemanticException(column.getForeignColumn());
           }
+          // Check if data type is correct
+          ColumnAttribute foreignColumn = semanticAttributeTable.getTable(tableName).getColumn(columnName);
+          if (!foreignColumn.getDataType().getType().getValue().equals(column.getDataType().getType().getValue())) {
+            throw new TypeMismatchSemanticException(column, foreignColumn);
+          }
         }
       }
     }
@@ -212,7 +235,7 @@ public class SemanticParser {
         }
       });
     });
-    // TODO check chekc clauses type and if column exists, for every table
+    // TODO check check clauses type and if column exists, for every table
   }
 
   private void analyzeCheckExpression(Expression expression) {
