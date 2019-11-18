@@ -1,6 +1,9 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.semantic.parser;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
+import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.TokenType;
+import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.KeywordToken;
+import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.SpecialCharacterToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CheckConstraintAlreadyDefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnAlreadyDefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnUndefinedSemanticException;
@@ -10,14 +13,17 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableAlreadyDe
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableUndefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TypeMismatchSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.CheckAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.TableAttribute;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.components.DataTypeAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.SyntaxTree;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.CreateDefinition;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.CreateTableDefinition;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.ColumnDefinition;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.TableConstraintDefinition;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.TableElement;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.CheckConstraint;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.Constraint;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.ConstraintList;
@@ -26,14 +32,19 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.ReferenceConstraint;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.UniqueConstraint;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ColumnOperand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ConstantOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.DataTypeOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.IntervalDataTypeOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.KeywordOperand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.Operand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ZonedDataTypeOperand;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operator.Operator;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.Predicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -117,7 +128,8 @@ public class SemanticParser {
     ColumnAttribute columnAttribute = new ColumnAttribute();
 
     columnAttribute.setColumnName(columnDefinition.getColumnName());
-    columnAttribute.setDataType(columnDefinition.getDataType());
+    columnAttribute.setDataType(DataTypeAttribute.convertToDataTypeAttribute(columnDefinition.getDataType()));
+    columnAttribute.setLength(Integer.valueOf(columnDefinition.getDataType().getPrecisionOrLength().getValue()));
     columnAttribute.setDefaultValue(columnDefinition.getDefaultValue());
     fillConstraintAttributes(columnAttribute, columnDefinition.getConstraintList());
 
@@ -214,7 +226,7 @@ public class SemanticParser {
           }
           // Check if data type is correct
           ColumnAttribute foreignColumn = semanticAttributeTable.getTable(tableName).getColumn(columnName);
-          if (!foreignColumn.getDataType().getType().getValue().equals(column.getDataType().getType().getValue())) {
+          if (!foreignColumn.getDataType().equals(column.getDataType())) {
             throw new TypeMismatchSemanticException(column, foreignColumn);
           }
         }
@@ -223,46 +235,85 @@ public class SemanticParser {
   }
 
   private void analyzeCheckClause() throws SemanticException {
-    semanticAttributeTable.getTables().forEach((tableName, tableAttribute) -> {
-      tableAttribute.getCheckAttribute().getCheckExpressions().forEach(expression -> {
-        analyzeCheckPredicate((Predicate) expression);
-      });
-    });
-    // TODO check check clauses type and if column exists, for every table
+    for (Map.Entry<String, TableAttribute> table : semanticAttributeTable.getTables().entrySet()) {
+      CheckAttribute checkAttribute = new CheckAttribute();
+      for (Expression checkExpression : table.getValue().getCheckAttribute().getCheckExpressions()) {
+        if (analyzeCheckPredicate((Predicate) checkExpression, checkAttribute) != DataTypeAttribute.BOOLEAN) {
+          throw new SemanticException("TODO"); //TODO dodati exception Check mora biti boolean
+        }
+      }
+      table.getValue().setCheckAttribute(checkAttribute);
+    }
   }
 
-  private void analyzeCheckExpression(Expression expression) {
+  private DataTypeAttribute analyzeCheckExpression(Expression expression, CheckAttribute checkAttribute) {
     if (expression instanceof Predicate) {
-      analyzeCheckPredicate((Predicate) expression);
-    } else if (expression instanceof Operand) {
-      analyzeCheckOperand((Operand) expression);
+      return analyzeCheckPredicate((Predicate) expression, checkAttribute);
     }
+    if (expression instanceof Operand) {
+      return analyzeCheckOperand((Operand) expression);
+    }
+    return null;
   }
 
-  private void analyzeCheckPredicate(Predicate predicate) {
+  private DataTypeAttribute analyzeCheckPredicate(Predicate predicate, CheckAttribute checkAttribute) {
     if (predicate instanceof UnaryPredicate) {
-      analyzeUnaryPredicate((UnaryPredicate) predicate);
-    } else if (predicate instanceof BinaryPredicate) {
-      analyzeBinaryPredicate((BinaryPredicate) predicate);
+      return analyzeUnaryPredicate((UnaryPredicate) predicate, checkAttribute);
     }
+    if (predicate instanceof BinaryPredicate) {
+      return analyzeBinaryPredicate((BinaryPredicate) predicate, checkAttribute);
+    }
+    return null;
   }
 
-  private void analyzeCheckOperand(Operand operand) {
+  private DataTypeAttribute analyzeCheckOperand(Operand operand) {
+    if (operand instanceof ColumnAttribute) {
+      return ((ColumnAttribute) operand).getDataType();
+    }
     if (operand instanceof ConstantOperand) {
-      ((ConstantOperand) operand).getOperand().getTokenType();
+      switch (operand.getOperand().getTokenType()) {
+        case CONSTANT_INTEGER_VALUE:
+          return DataTypeAttribute.INTEGER;
+        case CONSTANT_REAL_NUMBER_VALUE:
+          return DataTypeAttribute.REAL;
+        case CONSTANT_QUOTED_VALUE:
+          return DataTypeAttribute.STRING;
+      }
     }
-    //((ColumnOperand)operand).getOperand()
+    if (operand instanceof KeywordOperand) {
+      String value = operand.getOperand().getValue().toLowerCase();
+      if (value.equals(KeywordToken.TRUE.toString().toLowerCase()) || value.equals(KeywordToken.FALSE.toString().toLowerCase())) {
+        return DataTypeAttribute.BOOLEAN;
+      }
+    }
+    if (operand instanceof IntervalDataTypeOperand) {
+      return DataTypeAttribute.INTERVAL;
+    }
+    if (operand instanceof ZonedDataTypeOperand) {
+      ? //TODO ZonedDateTime
+    }
+    if (operand instanceof DataTypeOperand) {
+      return DataTypeAttribute.convertToDataTypeAttribute(operand.getOperand().getValue());
+    }
+    return null;
   }
 
-  private void analyzeUnaryPredicate(UnaryPredicate predicate) {
+  private DataTypeAttribute analyzeUnaryPredicate(UnaryPredicate predicate, CheckAttribute checkAttribute) {
+    BinaryPredicate castPredicate = new BinaryPredicate();
+    DataTypeOperand castDataType = new DataTypeOperand(new DataType(new Token(TokenType.DATA_TYPE, DataTypeAttribute.BOOLEAN.name())));
     switch (predicate.getOperator().getOperator()) {
       case NOT:
+        if (analyzeCheckExpression(predicate.getExpression(), checkAttribute) != DataTypeAttribute.BOOLEAN) {
+          castPredicate.setFirstExpression(factor);
+          castPredicate.setOperator(new Operator(SpecialCharacterToken.CAST, predicate..getLineNumber()));
+          castPredicate.setSecondExpression(new DataTypeOperand());
+        }
       case PLUS:
       case MINUS:
     }
   }
 
-  private void analyzeBinaryPredicate(BinaryPredicate predicate) {
+  private DataTypeAttribute analyzeBinaryPredicate(BinaryPredicate predicate, CheckAttribute checkAttribute) {
     switch (predicate.getOperator().getOperator().getRootType()) {
       case BINARY:
       case RATIONAL:

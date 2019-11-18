@@ -10,9 +10,9 @@ public class TypeMismatchSemanticException extends SemanticException {
     super(String.format(
       COLUMN_TYPE_NO_MATCH_ERROR,
       column1.getColumnName().getValue(),
-      column1.getDataType().getType().getValue(),
+      column1.getDataType().name(),
       column2.getColumnName().getValue(),
-      column2.getDataType().getType().getValue()
+      column2.getDataType().name()
     ));
   }
 }

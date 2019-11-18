@@ -1,7 +1,7 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.components.DataTypeAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.reference.ReferenceAction;
 
 import java.util.Objects;
@@ -9,7 +9,8 @@ import java.util.Objects;
 public class ColumnAttribute {
 
   private Token columnName;
-  private DataType dataType;
+  private DataTypeAttribute dataType;
+  private Integer length;
   private Token defaultValue;
   // Constraints
   private boolean primary = false;
@@ -30,12 +31,20 @@ public class ColumnAttribute {
     this.columnName = columnName;
   }
 
-  public DataType getDataType() {
+  public DataTypeAttribute getDataType() {
     return dataType;
   }
 
-  public void setDataType(DataType dataType) {
+  public void setDataType(DataTypeAttribute dataType) {
     this.dataType = dataType;
+  }
+
+  public Integer getLength() {
+    return length;
+  }
+
+  public void setLength(Integer length) {
+    this.length = length;
   }
 
   public Token getDefaultValue() {
@@ -112,16 +121,11 @@ public class ColumnAttribute {
 
   @Override
   public String toString() {
-    String columnDefinition = columnName.getValue() + " " + dataType.getType().getValue();
-    // Data type length, preci
-    if (!Objects.isNull(dataType.getPrecisionOrLength())) {
-      columnDefinition += " (" + dataType.getPrecisionOrLength().getValue();
-      if (!Objects.isNull(dataType.getScale())) {
-        columnDefinition += ", " + dataType.getScale().getValue();
-      }
-      columnDefinition += ")";
-    }
+    String columnDefinition = columnName.getValue() + " " + dataType.name();
 
+    if (!Objects.isNull(length)) {
+      columnDefinition += " (" + length + ")";
+    }
     if (!Objects.isNull(defaultValue)) {
       columnDefinition += " DEFAULT " + defaultValue.getValue();
     }

@@ -28,6 +28,10 @@ public class TableAttribute {
     return checkAttribute;
   }
 
+  public void setCheckAttribute(CheckAttribute checkAttribute) {
+    this.checkAttribute = checkAttribute;
+  }
+
   public void addCheckExpression(Expression checkExpression) {
     checkAttribute.addExpression(checkExpression);
   }

@@ -5,7 +5,7 @@ public class SemanticException extends Exception {
   private static final String SEMANTIC_EXCEPTION = "Semantic error => ";
   private String message;
 
-  SemanticException(String message) {
+  public SemanticException(String message) {
     this.message = SEMANTIC_EXCEPTION + message;
   }
 
