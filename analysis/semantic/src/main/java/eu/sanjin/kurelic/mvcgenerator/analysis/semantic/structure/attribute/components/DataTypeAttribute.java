@@ -5,7 +5,9 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 
 public enum DataTypeAttribute {
 
-  BOOLEAN, DATE, DATETIME, INTEGER, REAL, STRING, TIME, TIMESTAMP, INTERVAL;
+  BOOLEAN, INTEGER, REAL, STRING,
+  DATE, DATETIME, TIME, TIMESTAMP, INTERVAL,
+  ZONED_DATETIME, ZONED_TIMESTAMP;
 
   public static DataTypeAttribute convertToDataTypeAttribute(DataType dataType) {
     return convertToDataTypeAttribute(dataType.getType().getValue());

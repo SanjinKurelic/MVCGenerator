@@ -10,6 +10,7 @@
     <modules>
         <module>analysis</module>
         <module>synthesis</module>
+        <module>view</module>
     </modules>
     <packaging>pom</packaging>
 
