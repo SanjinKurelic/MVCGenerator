@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-public class FontLoader {
+public class FontUtil {
 
   private static final String FONT_NAME = "font.ttf";
   private static final int DEFAULT_FONT_SIZE = 14;
@@ -16,7 +16,7 @@ public class FontLoader {
 
   private static void loadFont() {
     try {
-      InputStream is = FontLoader.class.getClassLoader().getResourceAsStream(FONT_NAME);
+      InputStream is = FontUtil.class.getClassLoader().getResourceAsStream(FONT_NAME);
       if (Objects.isNull(is)) {
         throw new IOException("File not found");
       }

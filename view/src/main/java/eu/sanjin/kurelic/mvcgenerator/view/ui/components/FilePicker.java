@@ -1,17 +1,23 @@
 package eu.sanjin.kurelic.mvcgenerator.view.ui.components;
 
+import eu.sanjin.kurelic.mvcgenerator.view.ui.util.StyleUtil;
+
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
-import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
 public class FilePicker extends JPanel {
 
   private static final String BUTTON_LABEL = "...";
-  private static final int PATH_FIELD_WIDTH = 140;
-  private static final int PADDING = 0;
+  private static final int BUTTON_WIDTH = 30;
+  private static final int BUTTON_MARGIN = 3;
+  private static final int PATH_FIELD_WIDTH = 147;
+  private static final int PATH_BUTTON_GAP_WIDTH = 5;
   private static final String ACCEPTED_EXTENSION = ".sql";
   private static final String ACCEPTED_EXTENSION_DESCRIPTION = "SQL file format";
   public static final int MODE_OPEN = 1;
@@ -34,14 +40,21 @@ public class FilePicker extends JPanel {
         return ACCEPTED_EXTENSION_DESCRIPTION;
       }
     });
-    setLayout(new FlowLayout(FlowLayout.CENTER, PADDING, PADDING));
 
+    setLayout(new GridBagLayout());
+    setBackground(StyleUtil.getBackgroundColor());
+    GridBagConstraints gbc = new GridBagConstraints();
+
+    gbc.gridy = 0;
+    gbc.gridx = 0;
     textField = new TextField(PATH_FIELD_WIDTH);
-    add(textField);
+    add(textField, gbc);
 
-    Button button = new Button(BUTTON_LABEL);
+    gbc.gridx = 1;
+    gbc.insets = new Insets(BUTTON_MARGIN, PATH_BUTTON_GAP_WIDTH, BUTTON_MARGIN, BUTTON_MARGIN);
+    Button button = new Button(BUTTON_LABEL, BUTTON_WIDTH);
     button.addActionListener(this::buttonActionPerformed);
-    add(button);
+    add(button, gbc);
   }
 
   private void buttonActionPerformed(ActionEvent e) {
@@ -62,9 +75,5 @@ public class FilePicker extends JPanel {
 
   public String getSelectedFilePath() {
     return textField.getText();
-  }
-
-  public JFileChooser getFileChooser() {
-    return this.fileChooser;
   }
 }

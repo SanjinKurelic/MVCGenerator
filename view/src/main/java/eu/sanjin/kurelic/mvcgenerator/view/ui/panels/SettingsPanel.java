@@ -1,7 +1,8 @@
 package eu.sanjin.kurelic.mvcgenerator.view.ui.panels;
 
 import eu.sanjin.kurelic.mvcgenerator.view.ui.components.Label;
-import eu.sanjin.kurelic.mvcgenerator.view.ui.util.FontLoader;
+import eu.sanjin.kurelic.mvcgenerator.view.ui.util.FontUtil;
+import eu.sanjin.kurelic.mvcgenerator.view.ui.util.StyleUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -23,12 +24,13 @@ class SettingsPanel extends JPanel {
 
   SettingsPanel(String panelTitle) {
     setLayout(new GridBagLayout());
+    setBackground(StyleUtil.getBackgroundColor());
     setBorder(BorderFactory.createTitledBorder(
-      null,
-      panelTitle,
-      TitledBorder.LEADING,
-      TitledBorder.DEFAULT_POSITION,
-      FontLoader.getFont(TITLE_FONT_SIZE)
+        BorderFactory.createLineBorder(StyleUtil.getTextColor()),
+        panelTitle,
+        TitledBorder.LEADING,
+        TitledBorder.DEFAULT_POSITION,
+        FontUtil.getFont(TITLE_FONT_SIZE)
     ));
     gbc = new GridBagConstraints();
     gbc.insets = new Insets(PANEL_PADDING_TOP_BOTTOM, PANEL_PADDING_LEFT_RIGHT, PANEL_PADDING_TOP_BOTTOM, PANEL_PADDING_LEFT_RIGHT);

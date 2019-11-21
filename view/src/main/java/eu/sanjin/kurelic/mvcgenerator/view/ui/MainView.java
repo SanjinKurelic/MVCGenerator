@@ -5,7 +5,8 @@ import eu.sanjin.kurelic.mvcgenerator.view.service.Generator;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.components.Button;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.panels.InputSettingsPanel;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.panels.OutputSettingsPanel;
-import eu.sanjin.kurelic.mvcgenerator.view.ui.util.InputValidator;
+import eu.sanjin.kurelic.mvcgenerator.view.ui.util.StyleUtil;
+import eu.sanjin.kurelic.mvcgenerator.view.ui.util.ValidationUtil;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -53,6 +54,7 @@ public class MainView extends JFrame {
 
   private JPanel populateWindow() {
     JPanel container = new JPanel(new GridBagLayout());
+    container.setBackground(StyleUtil.getBackgroundColor());
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.insets = new Insets(PANEL_PADDING, PANEL_PADDING, PANEL_PADDING, PANEL_PADDING);
     gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -80,7 +82,7 @@ public class MainView extends JFrame {
     String rootNamespace = outputSettingsPanel.getRootNamespace();
     String outputDirectoryPath = outputSettingsPanel.getOutputDirectory();
 
-    ArrayList<String> errors = InputValidator.validateInput(inputFilePath, rootNamespace, outputDirectoryPath);
+    ArrayList<String> errors = ValidationUtil.validateInput(inputFilePath, rootNamespace, outputDirectoryPath);
     if (errors.size() > 0) {
       showError(String.join("\n", errors));
       return;
@@ -91,7 +93,7 @@ public class MainView extends JFrame {
       settings.setFileContent(Files.readString(Paths.get(inputFilePath)));
     } catch (IOException ignored) {
       // Should not happen because validation check this case
-      showError(InputValidator.INPUT_FILE_NOT_READABLE);
+      showError(ValidationUtil.INPUT_FILE_NOT_READABLE);
     }
     settings.setRootNamespace(Objects.isNull(rootNamespace) ? "" : rootNamespace);
     settings.setOutputPath(outputDirectoryPath);

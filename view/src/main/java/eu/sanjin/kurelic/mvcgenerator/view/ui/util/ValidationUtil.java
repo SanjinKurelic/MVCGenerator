@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class InputValidator {
+public class ValidationUtil {
 
   private static final String INPUT_FILE_EMPTY = "Please select sql input file.";
   private static final String INPUT_FILE_NOT_EXISTS = "Selected SQL file does not exists. Have you delete it?";
