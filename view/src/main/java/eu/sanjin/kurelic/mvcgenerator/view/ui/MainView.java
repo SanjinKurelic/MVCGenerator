@@ -46,10 +46,10 @@ public class MainView extends JFrame {
 
   private void configureWindow() {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setResizable(false);
     getContentPane().add(populateWindow());
     pack();
     setLocationRelativeTo(null);
-    setVisible(true);
   }
 
   private JPanel populateWindow() {

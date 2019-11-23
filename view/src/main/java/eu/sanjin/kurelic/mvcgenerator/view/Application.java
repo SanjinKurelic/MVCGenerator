@@ -13,11 +13,6 @@ public class Application {
   }
 
   private static void showWindow() {
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
-      // use swing default style
-    }
     new MainView().setVisible(true);
   }
 }

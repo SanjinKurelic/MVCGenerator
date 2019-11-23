@@ -30,7 +30,7 @@ public class OutputSettingsPanel extends SettingsPanel {
     addRow(ROOT_NAMESPACE_LABEL, rootNamespace);
 
     filePicker = new FilePicker();
-    filePicker.setMode(FilePicker.MODE_SAVE);
+    filePicker.setMode(FilePicker.OPEN_DIRECTORY);
     addRow(OUTPUT_DIRECTORY_LABEL, filePicker);
   }
 

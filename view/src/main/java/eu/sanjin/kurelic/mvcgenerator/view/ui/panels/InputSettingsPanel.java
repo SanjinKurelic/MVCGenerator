@@ -19,7 +19,7 @@ public class InputSettingsPanel extends SettingsPanel {
 
   private void populatePanel() {
     filePicker = new FilePicker();
-    filePicker.setMode(FilePicker.MODE_OPEN);
+    filePicker.setMode(FilePicker.OPEN_FILE);
     addRow(SQL_FILE_LABEL, filePicker);
 
     addRow(SQL_DIALECT_LABEL, new DisabledComboBox(DEFAULT_SQL_DIALECT));

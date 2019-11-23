@@ -4,12 +4,11 @@ import eu.sanjin.kurelic.mvcgenerator.view.ui.util.StyleUtil;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.io.File;
 
 public class FilePicker extends JPanel {
 
@@ -19,9 +18,9 @@ public class FilePicker extends JPanel {
   private static final int PATH_FIELD_WIDTH = 147;
   private static final int PATH_BUTTON_GAP_WIDTH = 5;
   private static final String ACCEPTED_EXTENSION = ".sql";
-  private static final String ACCEPTED_EXTENSION_DESCRIPTION = "SQL file format";
-  public static final int MODE_OPEN = 1;
-  public static final int MODE_SAVE = 2;
+  private static final String ACCEPTED_EXTENSION_DESCRIPTION = "SQL file format (.sql)";
+  public static final int OPEN_FILE = 1;
+  public static final int OPEN_DIRECTORY = 2;
 
   private int mode;
   private TextField textField;
@@ -29,17 +28,7 @@ public class FilePicker extends JPanel {
 
   public FilePicker() {
     fileChooser = new JFileChooser();
-    fileChooser.setFileFilter(new FileFilter() {
-      @Override
-      public boolean accept(File f) {
-        return f.isDirectory() || f.getName().toLowerCase().endsWith(ACCEPTED_EXTENSION);
-      }
-
-      @Override
-      public String getDescription() {
-        return ACCEPTED_EXTENSION_DESCRIPTION;
-      }
-    });
+    fileChooser.setFileFilter(new FileNameExtensionFilter(ACCEPTED_EXTENSION_DESCRIPTION, ACCEPTED_EXTENSION));
 
     setLayout(new GridBagLayout());
     setBackground(StyleUtil.getBackgroundColor());
@@ -58,14 +47,14 @@ public class FilePicker extends JPanel {
   }
 
   private void buttonActionPerformed(ActionEvent e) {
-    if (mode == MODE_OPEN) {
-      if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-        textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-      }
-    } else if (mode == MODE_SAVE) {
-      if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-        textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-      }
+    // set mode
+    if (mode == OPEN_FILE) {
+      fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    } else if (mode == OPEN_DIRECTORY) {
+      fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    }
+    if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
     }
   }
 
