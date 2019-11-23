@@ -1,18 +1,10 @@
-package eu.sanjin.kurelic.mvcgenerator.view.model;
+package eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure;
 
-public class Settings {
+public class TargetSettings {
 
-  private String fileContent;
   private String rootNamespace;
+  private TargetFramework targetFramework;
   private String outputPath;
-
-  public String getFileContent() {
-    return fileContent;
-  }
-
-  public void setFileContent(String fileContent) {
-    this.fileContent = fileContent;
-  }
 
   public String getRootNamespace() {
     return rootNamespace;
@@ -20,6 +12,14 @@ public class Settings {
 
   public void setRootNamespace(String rootNamespace) {
     this.rootNamespace = rootNamespace;
+  }
+
+  public TargetFramework getTargetFramework() {
+    return targetFramework;
+  }
+
+  public void setTargetFramework(TargetFramework targetFramework) {
+    this.targetFramework = targetFramework;
   }
 
   public String getOutputPath() {

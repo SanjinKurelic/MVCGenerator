@@ -1,20 +1,14 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.semantic;
 
-import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.LexicalAnalyzer;
-import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.SyntaxAnalyzer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SemanticAnalyzerTest {
 
-  private LexicalAnalyzer lexicalAnalyzer;
-  private SyntaxAnalyzer syntaxAnalyzer;
   private SemanticAnalyzer semanticAnalyzer;
 
   @BeforeEach
   void setUp() {
-    lexicalAnalyzer = new LexicalAnalyzer();
-    syntaxAnalyzer = new SyntaxAnalyzer();
     semanticAnalyzer = new SemanticAnalyzer();
   }
 
@@ -22,9 +16,7 @@ class SemanticAnalyzerTest {
   void smallExample() {
     String sql = "CREATE TABLE Student (id INT CHECK(id > 5 OR id BETWEEN 0 AND 1));";
     try {
-      lexicalAnalyzer.parse(sql);
-      syntaxAnalyzer.parse(lexicalAnalyzer.getTokens());
-      semanticAnalyzer.parse(syntaxAnalyzer.getSyntaxTree());
+      semanticAnalyzer.parse(sql);
       System.out.println(semanticAnalyzer.getSemanticAttributeTable());
     } catch (Exception e) {
       System.err.println(e.getMessage());
@@ -47,9 +39,7 @@ class SemanticAnalyzerTest {
     code.append("id INT PRIMARY KEY").append("\n");
     code.append(");");
     try {
-      lexicalAnalyzer.parse(code.toString());
-      syntaxAnalyzer.parse(lexicalAnalyzer.getTokens());
-      semanticAnalyzer.parse(syntaxAnalyzer.getSyntaxTree());
+      semanticAnalyzer.parse(code.toString());
       System.out.println(semanticAnalyzer.getSemanticAttributeTable());
     } catch (Exception e) {
       System.err.println(e.getMessage());

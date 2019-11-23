@@ -1,17 +1,14 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.syntax;
 
-import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.LexicalAnalyzer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SyntaxAnalyzerTest {
 
-  private LexicalAnalyzer lexicalAnalyzer;
   private SyntaxAnalyzer syntaxAnalyzer;
 
   @BeforeEach
   void setUp() {
-    lexicalAnalyzer = new LexicalAnalyzer();
     syntaxAnalyzer = new SyntaxAnalyzer();
   }
 
@@ -19,8 +16,7 @@ class SyntaxAnalyzerTest {
   void smallExample() {
     String sql = "CREATE TABLE Student (id INT CHECK(id > 5 OR id BETWEEN 0 AND 1));";
     try {
-      lexicalAnalyzer.parse(sql);
-      syntaxAnalyzer.parse(lexicalAnalyzer.getTokens());
+      syntaxAnalyzer.parse(sql);
       System.out.println(syntaxAnalyzer.getSyntaxTree());
     } catch (Exception e) {
       System.err.println(e.getMessage());
@@ -40,8 +36,7 @@ class SyntaxAnalyzerTest {
     code.append("CONSTRAINT FK_address FOREIGN KEY (address) REFERENCES \"Address Table\" (id)").append("\n");
     code.append(");");
     try {
-      lexicalAnalyzer.parse(code.toString());
-      syntaxAnalyzer.parse(lexicalAnalyzer.getTokens());
+      syntaxAnalyzer.parse(code.toString());
       System.out.println(syntaxAnalyzer.getSyntaxTree());
     } catch (Exception e) {
       System.err.println(e.getMessage());

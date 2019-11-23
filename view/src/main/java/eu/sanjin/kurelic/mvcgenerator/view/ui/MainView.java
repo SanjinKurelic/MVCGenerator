@@ -1,7 +1,8 @@
 package eu.sanjin.kurelic.mvcgenerator.view.ui;
 
-import eu.sanjin.kurelic.mvcgenerator.view.model.Settings;
-import eu.sanjin.kurelic.mvcgenerator.view.service.Generator;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.TargetCodeSynthesis;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetFramework;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetSettings;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.components.Button;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.panels.InputSettingsPanel;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.panels.OutputSettingsPanel;
@@ -32,13 +33,13 @@ public class MainView extends JFrame {
   private static final String SUCCESS_POPUP_TITLE = "Success";
   private static final String SUCCESS_POPUP_MESSAGE = "Files are successfully created at location: %s";
 
-  private Generator generator;
+  private TargetCodeSynthesis targetCodeSynthesis;
   private InputSettingsPanel inputSettingsPanel;
   private OutputSettingsPanel outputSettingsPanel;
 
   public MainView() throws HeadlessException {
     super(APPLICATION_NAME);
-    generator = new Generator();
+    targetCodeSynthesis = new TargetCodeSynthesis();
     inputSettingsPanel = new InputSettingsPanel();
     outputSettingsPanel = new OutputSettingsPanel();
     configureWindow();
@@ -88,26 +89,30 @@ public class MainView extends JFrame {
       return;
     }
 
-    Settings settings = new Settings();
+    TargetSettings settings = new TargetSettings();
+    String fileContent;
     try {
-      settings.setFileContent(Files.readString(Paths.get(inputFilePath)));
+      fileContent = Files.readString(Paths.get(inputFilePath));
     } catch (IOException ignored) {
       // Should not happen because validation check this case
       showError(ValidationUtil.INPUT_FILE_NOT_READABLE);
+      return;
     }
+    // Only Java/Spring is supported
+    settings.setTargetFramework(TargetFramework.SPRING);
     settings.setRootNamespace(Objects.isNull(rootNamespace) ? "" : rootNamespace);
     settings.setOutputPath(outputDirectoryPath);
 
-    errors = generator.generate(settings);
-    if (errors.size() > 0) {
-      showError(String.join("\n", errors));
-    } else {
+    try {
+      targetCodeSynthesis.parse(fileContent, settings);
       JOptionPane.showMessageDialog(
         this,
         String.format(SUCCESS_POPUP_MESSAGE, outputDirectoryPath),
         SUCCESS_POPUP_TITLE,
         JOptionPane.INFORMATION_MESSAGE
       );
+    } catch (Exception e) {
+      showError(e.getMessage());
     }
   }
 

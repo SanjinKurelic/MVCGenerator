@@ -17,19 +17,7 @@ class LexicalAnalyzerTest {
   }
 
   @Test
-  void constantTest() {
-    String input = "5 -5.5 '5.5.2015.' 'CREATE TABLE 'identifier'' '\"\"' DEFAULT '' identifier_abc identifier.abc";
-    Assertions.assertDoesNotThrow(() -> lexicalAnalyzer.parse(input));
-    System.out.println(lexicalAnalyzer.getTokens());
-  }
-
-  @Test
-  void constantErrorTest() {
-    Assertions.assertThrows(UnclosedQuotedTextLexicalException.class, () -> lexicalAnalyzer.parse("5.5 10 'Unclosed string 10 5.5"));
-  }
-
-  @Test
-  void smallValidTest() {
+  void smallExample() {
     String input = "CREATE TABLE Student(\n" +
       "id INT PRIMARY KEY,\n" +
       "name VARCHAR(50) DEFAULT '' NOT NULL,\n" +
@@ -40,7 +28,7 @@ class LexicalAnalyzerTest {
   }
 
   @Test
-  void bigValidTest() {
+  void bigExample() {
     String input = "/*\nStudent database\n*/\n" +
       "CREATE TABLE school_db.Student(\n" +
       "id INT PRIMARY KEY,\n" +
@@ -56,6 +44,17 @@ class LexicalAnalyzerTest {
     System.out.println(lexicalAnalyzer.getTokens());
   }
 
+  @Test
+  void constantTest() {
+    String input = "5 -5.5 '5.5.2015.' 'CREATE TABLE 'identifier'' '\"\"' DEFAULT '' identifier_abc identifier.abc";
+    Assertions.assertDoesNotThrow(() -> lexicalAnalyzer.parse(input));
+    System.out.println(lexicalAnalyzer.getTokens());
+  }
+
+  @Test
+  void constantErrorTest() {
+    Assertions.assertThrows(UnclosedQuotedTextLexicalException.class, () -> lexicalAnalyzer.parse("5.5 10 'Unclosed string 10 5.5"));
+  }
 
   @Test
   void validIdentifierTest() {
