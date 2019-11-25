@@ -5,6 +5,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.TokenType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.KeywordToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.SpecialCharacterToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CheckConstraintAlreadyDefinedSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CheckExpressionNotBooleanException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnAlreadyDefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnUndefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ReferenceConstraintAlreadyDefinedSemanticException;
@@ -236,19 +237,18 @@ public class SemanticParser {
 
   private void analyzeCheckClause() throws SemanticException {
     for (Map.Entry<String, TableAttribute> table : semanticAttributeTable.getTables().entrySet()) {
-      CheckAttribute checkAttribute = new CheckAttribute();
       for (Expression checkExpression : table.getValue().getCheckAttribute().getCheckExpressions()) {
-        if (analyzeCheckPredicate((Predicate) checkExpression, checkAttribute) != DataTypeAttribute.BOOLEAN) {
-          throw new SemanticException("TODO"); //TODO dodati exception Check mora biti boolean
+        // Every Check statement must return boolean value
+        if (analyzeCheckPredicate((Predicate) checkExpression) != DataTypeAttribute.BOOLEAN) {
+          throw new CheckExpressionNotBooleanException(((Predicate) checkExpression).getOperator().getLineNumber());
         }
       }
-      table.getValue().setCheckAttribute(checkAttribute);
     }
   }
 
-  private DataTypeAttribute analyzeCheckExpression(Expression expression, CheckAttribute checkAttribute) {
+  private DataTypeAttribute analyzeCheckExpression(Expression expression) throws SemanticException {
     if (expression instanceof Predicate) {
-      return analyzeCheckPredicate((Predicate) expression, checkAttribute);
+      return analyzeCheckPredicate((Predicate) expression);
     }
     if (expression instanceof Operand) {
       return analyzeCheckOperand((Operand) expression);
@@ -256,64 +256,36 @@ public class SemanticParser {
     return null;
   }
 
-  private DataTypeAttribute analyzeCheckPredicate(Predicate predicate, CheckAttribute checkAttribute) {
+  private DataTypeAttribute analyzeCheckPredicate(Predicate predicate) throws SemanticException {
     if (predicate instanceof UnaryPredicate) {
-      return analyzeUnaryPredicate((UnaryPredicate) predicate, checkAttribute);
+      return analyzeUnaryPredicate((UnaryPredicate) predicate);
     }
     if (predicate instanceof BinaryPredicate) {
-      return analyzeBinaryPredicate((BinaryPredicate) predicate, checkAttribute);
+      return analyzeBinaryPredicate((BinaryPredicate) predicate);
     }
     return null;
   }
 
-  private DataTypeAttribute analyzeCheckOperand(Operand operand) {
-    if (operand instanceof ColumnAttribute) {
-      return ((ColumnAttribute) operand).getDataType();
-    }
-    if (operand instanceof ConstantOperand) {
-      switch (operand.getOperand().getTokenType()) {
-        case CONSTANT_INTEGER_VALUE:
-          return DataTypeAttribute.INTEGER;
-        case CONSTANT_REAL_NUMBER_VALUE:
-          return DataTypeAttribute.REAL;
-        case CONSTANT_QUOTED_VALUE:
-          return DataTypeAttribute.STRING;
-      }
-    }
-    if (operand instanceof KeywordOperand) {
-      String value = operand.getOperand().getValue().toLowerCase();
-      if (value.equals(KeywordToken.TRUE.toString().toLowerCase()) || value.equals(KeywordToken.FALSE.toString().toLowerCase())) {
-        return DataTypeAttribute.BOOLEAN;
-      }
-    }
-    if (operand instanceof IntervalDataTypeOperand) {
-      return DataTypeAttribute.INTERVAL;
-    }
-    if (operand instanceof ZonedDataTypeOperand) {
-      ? //TODO ZonedDateTime
-    }
-    if (operand instanceof DataTypeOperand) {
-      return DataTypeAttribute.convertToDataTypeAttribute(operand.getOperand().getValue());
-    }
-    return null;
-  }
-
-  private DataTypeAttribute analyzeUnaryPredicate(UnaryPredicate predicate, CheckAttribute checkAttribute) {
-    BinaryPredicate castPredicate = new BinaryPredicate();
-    DataTypeOperand castDataType = new DataTypeOperand(new DataType(new Token(TokenType.DATA_TYPE, DataTypeAttribute.BOOLEAN.name())));
+  private DataTypeAttribute analyzeUnaryPredicate(UnaryPredicate predicate) throws SemanticException {
+    DataTypeAttribute dataTypeAttribute = analyzeCheckExpression(predicate.getExpression());
+    int lineNumber = predicate.getOperator().getLineNumber();
     switch (predicate.getOperator().getOperator()) {
       case NOT:
-        if (analyzeCheckExpression(predicate.getExpression(), checkAttribute) != DataTypeAttribute.BOOLEAN) {
-          castPredicate.setFirstExpression(factor);
-          castPredicate.setOperator(new Operator(SpecialCharacterToken.CAST, predicate..getLineNumber()));
-          castPredicate.setSecondExpression(new DataTypeOperand());
+        if (dataTypeAttribute != DataTypeAttribute.BOOLEAN) {
+          throw new TypeMismatchSemanticException(dataTypeAttribute, lineNumber, DataTypeAttribute.BOOLEAN);
         }
+        return DataTypeAttribute.BOOLEAN;
       case PLUS:
       case MINUS:
+        if (dataTypeAttribute != DataTypeAttribute.REAL && dataTypeAttribute != DataTypeAttribute.INTEGER) {
+          throw new TypeMismatchSemanticException(dataTypeAttribute, lineNumber, DataTypeAttribute.INTEGER, DataTypeAttribute.REAL);
+        }
+        return dataTypeAttribute;
     }
+    return null;
   }
 
-  private DataTypeAttribute analyzeBinaryPredicate(BinaryPredicate predicate, CheckAttribute checkAttribute) {
+  private DataTypeAttribute analyzeBinaryPredicate(BinaryPredicate predicate) throws SemanticException {
     switch (predicate.getOperator().getOperator().getRootType()) {
       case BINARY:
       case RATIONAL:
@@ -326,6 +298,77 @@ public class SemanticParser {
           case OVERLAPS:
         }
     }
+  }
+
+  private Expression analyzeCheckOperand(Operand operand, DataTypeAttribute dataTypeAttribute) throws SemanticException {
+    if (operand instanceof ColumnAttribute) {
+      return ((ColumnAttribute) operand).getDataType();
+    }
+    else if (operand instanceof ConstantOperand) {
+      switch (operand.getOperand().getTokenType()) {
+        case CONSTANT_INTEGER_VALUE:
+          return DataTypeAttribute.INTEGER;
+        case CONSTANT_REAL_NUMBER_VALUE:
+          return DataTypeAttribute.REAL;
+        case CONSTANT_QUOTED_VALUE:
+          return DataTypeAttribute.STRING;
+      }
+    }
+    else if (operand instanceof KeywordOperand) {
+      String value = operand.getOperand().getValue().toLowerCase();
+      if (value.equals(KeywordToken.TRUE.toString().toLowerCase()) || value.equals(KeywordToken.FALSE.toString().toLowerCase())) {
+        return DataTypeAttribute.BOOLEAN;
+      }
+    }
+    else if (operand instanceof IntervalDataTypeOperand) {
+      return DataTypeAttribute.INTERVAL;
+    }
+    else if (operand instanceof ZonedDataTypeOperand) {
+      return DataTypeAttribute.ZONED_DATETIME;
+    }
+    else if (operand instanceof DataTypeOperand) {
+      return DataTypeAttribute.convertToDataTypeAttribute(operand.getOperand().getValue());
+    }
+    return null;
+  }
+
+  private Expression castToBoolean(Operand operand, DataTypeAttribute fromDataType) {
+    if (fromDataType.equals(DataTypeAttribute.BOOLEAN)) {
+      return operand;
+    }
+    BinaryPredicate cast = new BinaryPredicate();
+    cast.setOperator(new Operator(SpecialCharacterToken.CAST, operand.getOperand().getLineNumber()));
+    cast.setSecondExpression(buildDataTypeOperand(DataTypeAttribute.BOOLEAN));
+    switch (fromDataType) {
+      case DATE:
+      case DATETIME:
+      case TIME:
+      case TIMESTAMP:
+      case INTERVAL:
+      case ZONED_DATETIME:
+        cast.setFirstExpression(castToInteger(operand, fromDataType));
+        break;
+      case STRING:
+        if (operand.getOperand().getValue().equalsIgnoreCase("TRUE")) {
+
+        }
+      default:
+        cast.setFirstExpression(operand);
+        break;
+    }
+    return cast;
+  }
+
+  private Expression castToInteger(Operand operand, DataTypeAttribute fromDataType) {
+
+  }
+
+  private void implicitCastString(Expression expression, DataTypeAttribute toDataType) {
+
+  }
+
+  private DataTypeOperand buildDataTypeOperand(DataTypeAttribute dataTypeAttribute) {
+    return new DataTypeOperand(new DataType(new Token(TokenType.DATA_TYPE, dataTypeAttribute.name())));
   }
 
   public SemanticAttributeTable getSemanticAttributeTable() {
