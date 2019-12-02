@@ -4,6 +4,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.TokenType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.KeywordToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.SpecialCharacterToken;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CanNotCastTypeSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CheckConstraintAlreadyDefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.CheckExpressionNotBooleanException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.ColumnAlreadyDefinedSemanticException;
@@ -13,8 +14,9 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.SemanticExcept
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableAlreadyDefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableUndefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TypeMismatchSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnsupportedOperandTypeSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnsupportedPredicateTypeSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.CheckAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.TableAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.components.DataTypeAttribute;
@@ -235,6 +237,10 @@ public class SemanticParser {
     }
   }
 
+  /**
+   * Analyze check clause
+   * @throws SemanticException - there is type mismatch
+   */
   private void analyzeCheckClause() throws SemanticException {
     for (Map.Entry<String, TableAttribute> table : semanticAttributeTable.getTables().entrySet()) {
       for (Expression checkExpression : table.getValue().getCheckAttribute().getCheckExpressions()) {
@@ -246,61 +252,218 @@ public class SemanticParser {
     }
   }
 
-  private DataTypeAttribute analyzeCheckExpression(Expression expression) throws SemanticException {
-    if (expression instanceof Predicate) {
-      return analyzeCheckPredicate((Predicate) expression);
-    }
-    if (expression instanceof Operand) {
-      return analyzeCheckOperand((Operand) expression);
-    }
-    return null;
-  }
-
+  /**
+   * <check>{n} -> <unary expression>{q} | <binary expression>{q}
+   * { q <- n }
+   */
   private DataTypeAttribute analyzeCheckPredicate(Predicate predicate) throws SemanticException {
     if (predicate instanceof UnaryPredicate) {
-      return analyzeUnaryPredicate((UnaryPredicate) predicate);
+      return analyzeUnaryExpression((UnaryPredicate) predicate);
+    } else {
+      return analyzeBinaryExpression((BinaryPredicate) predicate);
     }
-    if (predicate instanceof BinaryPredicate) {
-      return analyzeBinaryPredicate((BinaryPredicate) predicate);
-    }
-    return null;
   }
 
-  private DataTypeAttribute analyzeUnaryPredicate(UnaryPredicate predicate) throws SemanticException {
+  /**
+   * <unary expression>{n} -> <not predicate>{q} | <plus-minus predicate>{q}
+   * { q <- n }
+   */
+  private DataTypeAttribute analyzeUnaryExpression(UnaryPredicate predicate) throws SemanticException {
+    if (predicate.getOperator().getOperator().equals(SpecialCharacterToken.NOT)) {
+      return analyzeNotPredicate(predicate);
+    }
+    else if (predicate.getOperator().getOperator().equals(SpecialCharacterToken.PLUS)
+      || predicate.getOperator().getOperator().equals(SpecialCharacterToken.MINUS)) {
+      return analyzePlusMinusPredicate(predicate);
+    }
+    throw new UnsupportedPredicateTypeSemanticException(predicate.getClass());
+  }
+
+  /**
+   * <not predicate>{n} -> NOT ( <boolean>{q} | <date-time>{p} | <numeric>{k} | <string>{k} )
+   * { n <- BOOLEAN, p <- cast(cast(p, INTEGER), BOOLEAN), k <- cast(k, BOOLEAN)}
+   */
+  private DataTypeAttribute analyzeNotPredicate(UnaryPredicate predicate) throws SemanticException {
     DataTypeAttribute dataTypeAttribute = analyzeCheckExpression(predicate.getExpression());
-    int lineNumber = predicate.getOperator().getLineNumber();
-    switch (predicate.getOperator().getOperator()) {
-      case NOT:
-        if (dataTypeAttribute != DataTypeAttribute.BOOLEAN) {
-          throw new TypeMismatchSemanticException(dataTypeAttribute, lineNumber, DataTypeAttribute.BOOLEAN);
-        }
-        return DataTypeAttribute.BOOLEAN;
-      case PLUS:
-      case MINUS:
-        if (dataTypeAttribute != DataTypeAttribute.REAL && dataTypeAttribute != DataTypeAttribute.INTEGER) {
-          throw new TypeMismatchSemanticException(dataTypeAttribute, lineNumber, DataTypeAttribute.INTEGER, DataTypeAttribute.REAL);
-        }
-        return dataTypeAttribute;
+    if (DataTypeAttribute.isDateTimeType(dataTypeAttribute)) {
+      predicate.setExpression(cast(cast(predicate.getExpression(), DataTypeAttribute.INTEGER), DataTypeAttribute.BOOLEAN));
     }
-    return null;
+    else if (DataTypeAttribute.isNumber(dataTypeAttribute) || DataTypeAttribute.STRING.equals(dataTypeAttribute)) {
+      predicate.setExpression(cast(predicate.getExpression(), DataTypeAttribute.BOOLEAN));
+    }
+    else if (!DataTypeAttribute.BOOLEAN.equals(dataTypeAttribute)) {
+      throw new TypeMismatchSemanticException(dataTypeAttribute, predicate.getOperator().getLineNumber(), DataTypeAttribute.BOOLEAN);
+    }
+    return DataTypeAttribute.BOOLEAN;
   }
 
-  private DataTypeAttribute analyzeBinaryPredicate(BinaryPredicate predicate) throws SemanticException {
+  /**
+   * <plus-minus predicate>{n} -> ( + | - ) ( <numeric>{q} | <boolean>{p} | <string>{p} | <date-time>{p} )
+   * n <- q, n <- cast(p, INTEGER)
+   */
+  private DataTypeAttribute analyzePlusMinusPredicate(UnaryPredicate predicate) throws SemanticException {
+    DataTypeAttribute dataTypeAttribute = analyzeCheckExpression(predicate.getExpression());
+    if (DataTypeAttribute.isNumber(dataTypeAttribute)) {
+      return dataTypeAttribute;
+    }
+    else if (DataTypeAttribute.isDateTimeType(dataTypeAttribute) || DataTypeAttribute.BOOLEAN.equals(dataTypeAttribute)
+      || DataTypeAttribute.STRING.equals(dataTypeAttribute)) {
+      predicate.setExpression(cast(predicate.getExpression(), DataTypeAttribute.INTEGER));
+    }
+    else {
+      throw new TypeMismatchSemanticException(dataTypeAttribute, predicate.getOperator().getLineNumber(),
+        DataTypeAttribute.INTEGER, DataTypeAttribute.REAL);
+    }
+
+    return DataTypeAttribute.INTEGER;
+  }
+
+  /**
+   * <binary expression>{n} -> <like-concat predicate>{q} | <binary predicate>{q} | <rational predicate>{q}
+   * { n <- q }
+   */
+  private DataTypeAttribute analyzeBinaryExpression(BinaryPredicate predicate) throws SemanticException {
     switch (predicate.getOperator().getOperator().getRootType()) {
       case BINARY:
+        return analyzeBinaryPredicate(predicate);
       case RATIONAL:
-      case STRING_MANIPULATION:
-      case COMPOUND:
-        switch (predicate.getOperator().getOperator()) {
-          case NOT_LIKE:
-          case LIKE:
-          case CONCAT:
-          case OVERLAPS:
-        }
+        return analyzeRationalPredicate(predicate);
+      default:
+        return analyzeLikeConcatPredicate(predicate);
     }
   }
 
-  private Expression analyzeCheckOperand(Operand operand, DataTypeAttribute dataTypeAttribute) throws SemanticException {
+  /**
+   * <binary predicate>{n} -> <operand1>{p} <binary operator> <operand2>{q}
+   * { n <- REAL for p = REAL or/and q = REAL, n <- INTEGER for p = INTEGER and q = INTEGER }
+   * { p <- cast(p, INTEGER) for p != INTEGER and p != REAL, q <- cast(q, INTEGER) for q != INTEGER and q != REAL }
+   */
+  private DataTypeAttribute analyzeBinaryPredicate(BinaryPredicate predicate) throws SemanticException {
+    DataTypeAttribute dataTypeAttribute1 = analyzeCheckExpression(predicate.getFirstExpression());
+    DataTypeAttribute dataTypeAttribute2 = analyzeCheckExpression(predicate.getSecondExpression());
+
+    if (!DataTypeAttribute.isNumber(dataTypeAttribute1)) {
+      predicate.setFirstExpression(cast(predicate.getFirstExpression(), DataTypeAttribute.INTEGER));
+    }
+    if (!DataTypeAttribute.isNumber(dataTypeAttribute2)) {
+      predicate.setSecondExpression(cast(predicate.getSecondExpression(), DataTypeAttribute.INTEGER));
+    }
+
+    if (DataTypeAttribute.REAL.equals(dataTypeAttribute1) || DataTypeAttribute.REAL.equals(dataTypeAttribute2)) {
+      return DataTypeAttribute.REAL;
+    }
+    return DataTypeAttribute.INTEGER;
+  }
+
+  /**
+   * <rational predicate>{n} -> <operand1>{p} <rational operator> <operand2>{q}
+   * { n <- BOOLEAN, q <- q and p <- p for q = p }
+   * { q <- cast(q, STRING) for q != BOOLEAN and p = STRING  }
+   * { q <- cast(cast(q, INTEGER), STRING) for q = BOOLEAN and p = STRING }
+   * { q <- cast(q, INTEGER) for q = BOOLEAN and p = INTEGER }
+   * { q <- cast(cast(q, INTEGER), REAL) for q = BOOLEAN and p = REAL }
+   * { q <- cast(q, INTEGER), p <- cast(p, INTEGER) for q = BOOLEAN and p = DATE-TIME }
+   * { q <- cast(q, INTEGER) for q = DATE-TIME and p = NUMERIC }
+   * { q <- cast(q, REAL) for q = INTEGER and p = REAL }
+   * { q <- cast(q, DATE) for (q = DATETIME or q = TIMESTAMP) and p = DATE }
+   * { q <- cast(q, TIME) for (q = DATETIME or q = TIMESTAMP) and p = TIME }
+   * { q <- cast(q, DATETIME) for q = TIMESTAMP and p = DATETIME }
+   */
+  private DataTypeAttribute analyzeRationalPredicate(BinaryPredicate predicate) throws SemanticException {
+    DataTypeAttribute q = analyzeCheckExpression(predicate.getFirstExpression());
+    DataTypeAttribute p = analyzeCheckExpression(predicate.getSecondExpression());
+    boolean swapped = false;
+
+    // No need for casting
+    if (p.equals(q)) {
+      return DataTypeAttribute.BOOLEAN;
+    }
+    // Swap variables if second data type is higher order than first data type
+    if (p.getOrder() > q.getOrder()) {
+      DataTypeAttribute temp = q;
+      q = p;
+      p = temp;
+      swapped = true;
+    }
+    // validate & cast
+    if (DataTypeAttribute.STRING.equals(p) && !DataTypeAttribute.BOOLEAN.equals(q)) {
+      // cast to string
+      castHigherOrderType(predicate, DataTypeAttribute.STRING, swapped);
+    }
+    else if (DataTypeAttribute.STRING.equals(p)) { // DataTypeAttribute.BOOLEAN.equals(q) is already true
+       // cast to integer and then cast to string
+      castHigherOrderType(predicate, DataTypeAttribute.INTEGER, swapped);
+      castHigherOrderType(predicate, DataTypeAttribute.STRING, swapped);
+    }
+    else if (DataTypeAttribute.INTEGER.equals(p) && DataTypeAttribute.BOOLEAN.equals(q)) {
+      // cast to integer
+      castHigherOrderType(predicate, DataTypeAttribute.INTEGER, swapped);
+    }
+    else if (DataTypeAttribute.REAL.equals(p) && DataTypeAttribute.BOOLEAN.equals(q)) {
+      // cast to integer then cast to real
+      castHigherOrderType(predicate, DataTypeAttribute.INTEGER, swapped);
+      castHigherOrderType(predicate, DataTypeAttribute.REAL, swapped);
+    }
+    else if (DataTypeAttribute.isDateTimeType(p) && DataTypeAttribute.BOOLEAN.equals(q)) {
+      // q cast to integer, p cast to integer
+      castHigherOrderType(predicate, DataTypeAttribute.INTEGER, swapped);
+      castHigherOrderType(predicate, DataTypeAttribute.INTEGER, !swapped);
+    }
+    else if (DataTypeAttribute.isNumber(p) && DataTypeAttribute.isDateTimeType(q)) {
+      // cast to integer
+      castHigherOrderType(predicate, DataTypeAttribute.INTEGER, swapped);
+    }
+    else if (DataTypeAttribute.REAL.equals(p) && DataTypeAttribute.INTEGER.equals(q)) {
+      // cast to real
+      castHigherOrderType(predicate, DataTypeAttribute.REAL, swapped);
+    }
+    else if (DataTypeAttribute.DATE.equals(p) && DataTypeAttribute.isDateAndTimeType(q)) {
+      // cast to date
+      castHigherOrderType(predicate, DataTypeAttribute.DATE, swapped);
+    }
+    else if (DataTypeAttribute.TIME.equals(p) && DataTypeAttribute.isDateAndTimeType(q)) {
+      // cast to time
+      castHigherOrderType(predicate, DataTypeAttribute.TIME, swapped);
+    }
+    else if (DataTypeAttribute.DATETIME.equals(p) && DataTypeAttribute.TIMESTAMP.equals(q)) {
+      // cast to date time
+      castHigherOrderType(predicate, DataTypeAttribute.DATETIME, swapped);
+    }
+    else {
+      throw new CanNotCastTypeSemanticException(p, q, predicate.getOperator().getLineNumber());
+    }
+
+    return DataTypeAttribute.BOOLEAN;
+  }
+
+  /**
+   * <like-concat predicate>{n} -> <operand1>{p} ( [ NOT ] LIKE | <concat operator> ) <operand2>{q}
+   * { n <- STRING, p <- cast(p, STRING) for p != STRING, q <- cast(q, STRING) for q != STRING }
+   */
+  private DataTypeAttribute analyzeLikeConcatPredicate(BinaryPredicate predicate) throws SemanticException {
+    predicate.setFirstExpression(castLikeConcatOperand(predicate.getFirstExpression()));
+    predicate.setSecondExpression(castLikeConcatOperand(predicate.getSecondExpression()));
+
+    return DataTypeAttribute.STRING;
+  }
+
+  /**
+   * Helper method
+   * @param expression - first & second
+   * @return - expression or cast expression depending if data type is string
+   */
+  private Expression castLikeConcatOperand(Expression expression) throws SemanticException {
+    DataTypeAttribute dataTypeAttribute = analyzeCheckExpression(expression);
+    if (!DataTypeAttribute.STRING.equals(dataTypeAttribute)) {
+      return cast(expression, DataTypeAttribute.STRING);
+    }
+    return expression;
+  }
+
+  /**
+   * Get data type of operand
+   */
+  private DataTypeAttribute analyzeCheckOperand(Operand operand) throws SemanticException {
     if (operand instanceof ColumnAttribute) {
       return ((ColumnAttribute) operand).getDataType();
     }
@@ -329,46 +492,54 @@ public class SemanticParser {
     else if (operand instanceof DataTypeOperand) {
       return DataTypeAttribute.convertToDataTypeAttribute(operand.getOperand().getValue());
     }
-    return null;
+    throw new UnsupportedOperandTypeSemanticException(operand.getClass());
   }
 
-  private Expression castToBoolean(Operand operand, DataTypeAttribute fromDataType) {
-    if (fromDataType.equals(DataTypeAttribute.BOOLEAN)) {
-      return operand;
+  /**
+   * Helper method to determine if expression is predicate or operand
+   */
+  private DataTypeAttribute analyzeCheckExpression(Expression expression) throws SemanticException {
+    if (expression instanceof Predicate) {
+      return analyzeCheckPredicate((Predicate) expression);
+    } else {
+      return analyzeCheckOperand((Operand) expression);
     }
-    BinaryPredicate cast = new BinaryPredicate();
-    cast.setOperator(new Operator(SpecialCharacterToken.CAST, operand.getOperand().getLineNumber()));
-    cast.setSecondExpression(buildDataTypeOperand(DataTypeAttribute.BOOLEAN));
-    switch (fromDataType) {
-      case DATE:
-      case DATETIME:
-      case TIME:
-      case TIMESTAMP:
-      case INTERVAL:
-      case ZONED_DATETIME:
-        cast.setFirstExpression(castToInteger(operand, fromDataType));
-        break;
-      case STRING:
-        if (operand.getOperand().getValue().equalsIgnoreCase("TRUE")) {
+  }
 
-        }
-      default:
-        cast.setFirstExpression(operand);
-        break;
+  private void castHigherOrderType(BinaryPredicate predicate, DataTypeAttribute toDataType, boolean secondIsHigher) {
+    if (secondIsHigher) {
+      predicate.setSecondExpression(cast(predicate.getSecondExpression(), toDataType));
+    } else {
+      predicate.setFirstExpression(cast(predicate.getFirstExpression(), toDataType));
     }
-    return cast;
   }
 
-  private Expression castToInteger(Operand operand, DataTypeAttribute fromDataType) {
+  /**
+   * Helper method for building cast expression
+   * @param castExpression - expression that we need to cast
+   * @param toDataType - cast to this data type
+   * @return - cast expression
+   */
+  private Expression cast(Expression castExpression, DataTypeAttribute toDataType) {
+    BinaryPredicate castPredicate = new BinaryPredicate();
+    castPredicate.setFirstExpression(castExpression);
+    // Operator
+    Operator castOperator = new Operator();
+    castOperator.setOperator(SpecialCharacterToken.CAST);
+    int lineNumber = 0;
+    if (castExpression instanceof Predicate) {
+      lineNumber = ((Predicate) castExpression).getOperator().getLineNumber();
+    } else if (castExpression instanceof Operand) {
+      lineNumber = ((Operand) castExpression).getOperand().getLineNumber();
+    }
+    castOperator.setLineNumber(lineNumber);
+    castPredicate.setOperator(castOperator);
+    // To data type
+    Token dataToken = new Token(TokenType.DATA_TYPE, toDataType.name());
+    DataTypeOperand toDataTypeOperand = new DataTypeOperand(new DataType(dataToken));
+    castPredicate.setSecondExpression(toDataTypeOperand);
 
-  }
-
-  private void implicitCastString(Expression expression, DataTypeAttribute toDataType) {
-
-  }
-
-  private DataTypeOperand buildDataTypeOperand(DataTypeAttribute dataTypeAttribute) {
-    return new DataTypeOperand(new DataType(new Token(TokenType.DATA_TYPE, dataTypeAttribute.name())));
+    return castPredicate;
   }
 
   public SemanticAttributeTable getSemanticAttributeTable() {

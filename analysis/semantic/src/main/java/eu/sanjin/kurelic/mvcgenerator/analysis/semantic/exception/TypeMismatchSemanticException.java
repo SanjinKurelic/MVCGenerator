@@ -9,8 +9,8 @@ import java.util.stream.Stream;
 public class TypeMismatchSemanticException extends SemanticException {
 
   private static final String TWO_COLUMN_TYPE_NO_MATCH_ERROR = "Column type does not match. Column with name %s have type %s but column with name %s have type %s";
-  private static final String COLUMN_TYPE_NO_MATCH_ERROR = "Type does not match. Column with name %s have type %s but expected is %s, at line %d";
   private static final String TYPE_NO_MATCH_ERROR = "Type does not match. Expecting type %s, got %s, at line %d";
+  private static final String JOIN_DELIMITER = "or";
 
   public TypeMismatchSemanticException(ColumnAttribute column1, ColumnAttribute column2) {
     super(String.format(
@@ -22,20 +22,10 @@ public class TypeMismatchSemanticException extends SemanticException {
     ));
   }
 
-  public TypeMismatchSemanticException(ColumnAttribute column, int lineNumber, DataTypeAttribute... expected) {
-    super(String.format(
-      COLUMN_TYPE_NO_MATCH_ERROR,
-      column.getColumnName().getValue(),
-      column.getDataType().name(),
-      Stream.of(expected).map(DataTypeAttribute::name).collect(Collectors.joining("or")),
-      lineNumber
-    ));
-  }
-
   public TypeMismatchSemanticException(DataTypeAttribute type, int lineNumber, DataTypeAttribute... expected) {
     super(String.format(
       TYPE_NO_MATCH_ERROR,
-      Stream.of(expected).map(DataTypeAttribute::name).collect(Collectors.joining("or")),
+      Stream.of(expected).map(DataTypeAttribute::name).collect(Collectors.joining(JOIN_DELIMITER)),
       type.name(),
       lineNumber
     ));
