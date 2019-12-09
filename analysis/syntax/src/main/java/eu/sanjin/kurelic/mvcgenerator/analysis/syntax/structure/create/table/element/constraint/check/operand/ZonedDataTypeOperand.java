@@ -4,6 +4,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.TokenType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
 public class ZonedDataTypeOperand extends DataTypeOperand {
 
@@ -20,5 +21,10 @@ public class ZonedDataTypeOperand extends DataTypeOperand {
 
   public void setZone(Expression zone) {
     this.zone = zone;
+  }
+
+  @Override
+  public String toString() {
+    return XmlTagBuilder.surroundToken(zone.toString(), this);
   }
 }

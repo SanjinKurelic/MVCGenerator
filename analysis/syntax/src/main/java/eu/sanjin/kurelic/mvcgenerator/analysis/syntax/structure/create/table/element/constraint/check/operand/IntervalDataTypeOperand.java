@@ -3,10 +3,13 @@ package eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.el
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.TokenType;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
 public class IntervalDataTypeOperand extends DataTypeOperand {
 
   private static final String INTERVAL_QUALIFIER = "INTERVAL";
+  private static final String FROM_TAG = "From";
+  private static final String TO_TAG = "To";
   private Token from;
   private Token to;
 
@@ -28,5 +31,13 @@ public class IntervalDataTypeOperand extends DataTypeOperand {
 
   public void setTo(Token to) {
     this.to = to;
+  }
+
+  @Override
+  public String toString() {
+    String xml = XmlTagBuilder.getStartTag(this);
+    xml += XmlTagBuilder.surroundToken(from, FROM_TAG);
+    xml += XmlTagBuilder.surroundToken(to, TO_TAG);
+    return xml + XmlTagBuilder.getEndTag(this);
   }
 }

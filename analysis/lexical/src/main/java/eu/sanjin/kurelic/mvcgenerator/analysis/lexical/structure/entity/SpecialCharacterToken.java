@@ -1,7 +1,5 @@
 package eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity;
 
-import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
-
 public enum SpecialCharacterToken {
 
   // Delimiter

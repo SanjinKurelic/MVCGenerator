@@ -2,6 +2,7 @@ package eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.el
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
+import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
 public class DataTypeOperand implements Operand {
 
@@ -19,5 +20,10 @@ public class DataTypeOperand implements Operand {
   @Override
   public void setOperand(Token operand) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String toString() {
+    return XmlTagBuilder.surroundToken(dataType.getType(), this);
   }
 }

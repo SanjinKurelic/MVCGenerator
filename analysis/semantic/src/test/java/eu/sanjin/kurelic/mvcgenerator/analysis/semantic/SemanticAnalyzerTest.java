@@ -30,7 +30,7 @@ class SemanticAnalyzerTest {
     code.append("id INT PRIMARY KEY NOT NULL CHECK (id > 0),").append("\n");
     code.append("name VARCHAR(50) NOT NULL,").append("\n");
     code.append("surname VARCHAR(50) NOT NULL,").append("\n");
-    code.append("dateOfBirth DATE CHECK (dateOfBirth <= '2001-01-01'),").append("\n");
+    code.append("dateOfBirth DATE CHECK (dateOfBirth <= CAST('2001-01-01' AS DATE)),").append("\n");
     code.append("grade FLOAT DEFAULT 0.0 CHECK (grade BETWEEN 1 AND 5),").append("\n");
     code.append("address INT,").append("\n");
     code.append("CONSTRAINT FK_address FOREIGN KEY (address) REFERENCES \"Address Table\" (id)").append("\n");
