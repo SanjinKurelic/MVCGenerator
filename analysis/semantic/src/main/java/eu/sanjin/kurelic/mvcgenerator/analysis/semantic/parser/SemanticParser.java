@@ -497,8 +497,8 @@ public class SemanticParser {
   }
 
   /**
-   * <cast predicate>{n} -> <operand1> CAST <operand2>{p}
-   * { n <- p }
+   * <cast predicate>{n} -> <operand1>{p} CAST <operand2>{q}
+   * { n <- q }
    */
   private DataTypeAttribute analyzeCastPredicate(BinaryPredicate predicate) throws SemanticException {
     return analyzeCheckExpression(predicate.getSecondExpression());
