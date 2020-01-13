@@ -2,12 +2,12 @@ package eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.com
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.DataTypeToken;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.SemanticException;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnsupportedDataTypeSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnexpectedDataTypeSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.column.DataType;
 
 public enum DataTypeAttribute {
 
-  BOOLEAN(2), INTEGER(3), REAL(4), STRING(1),
+  NULL(0), STRING(1), BOOLEAN(2), INTEGER(3), REAL(4),
   DATE(5), DATETIME(7), TIME(6), TIMESTAMP(8), INTERVAL(9), ZONED_DATETIME(10);
 
   private int order;
@@ -48,7 +48,7 @@ public enum DataTypeAttribute {
           return TIMESTAMP;
       }
     }
-    throw new UnsupportedDataTypeSemanticException(dataTypeValue);
+    throw new UnexpectedDataTypeSemanticException(dataTypeValue);
   }
 
   public static boolean isTimeType(DataTypeAttribute dataTypeAttribute) {

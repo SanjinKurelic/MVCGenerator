@@ -14,9 +14,10 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.SemanticExcept
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableAlreadyDefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TableUndefinedSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.TypeMismatchSemanticException;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnsupportedOperandTypeSemanticException;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnsupportedOperatorTypeSemanticException;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnsupportedPredicateTypeSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnexpectedDataTypeSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnexpectedOperandTypeSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnexpectedOperatorTypeSemanticException;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.exception.UnexpectedPredicateTypeSemanticException;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.TableAttribute;
@@ -59,6 +60,7 @@ public class SemanticParser {
   private SyntaxTree syntaxTree;
   private SemanticAttributeTable semanticAttributeTable;
   private TableAttribute currentTable;
+  private ColumnAttribute currentColumn;
 
   public SemanticParser(SyntaxTree syntaxTree) {
     this.syntaxTree = syntaxTree;
@@ -289,7 +291,7 @@ public class SemanticParser {
       || predicate.getOperator().getOperator().equals(SpecialCharacterToken.MINUS)) {
       return analyzePlusMinusPredicate(predicate);
     }
-    throw new UnsupportedPredicateTypeSemanticException(predicate);
+    throw new UnexpectedPredicateTypeSemanticException(predicate);
   }
 
   /**
@@ -356,7 +358,7 @@ public class SemanticParser {
           return analyzeCastPredicate(predicate);
         }
       default:
-        throw new UnsupportedOperatorTypeSemanticException(predicate.getOperator());
+        throw new UnexpectedOperatorTypeSemanticException(predicate.getOperator());
     }
   }
 
@@ -388,6 +390,14 @@ public class SemanticParser {
     DataTypeAttribute dataTypeAttribute1 = analyzeCheckExpression(predicate.getFirstExpression());
     DataTypeAttribute dataTypeAttribute2 = analyzeCheckExpression(predicate.getSecondExpression());
 
+    // Null data type is not allowed
+    if (DataTypeAttribute.NULL.equals(dataTypeAttribute1) || DataTypeAttribute.NULL.equals(dataTypeAttribute2)) {
+      throw new TypeMismatchSemanticException(
+          DataTypeAttribute.NULL,
+          predicate.getOperator().getLineNumber(),
+          DataTypeAttribute.INTEGER, DataTypeAttribute.REAL
+      );
+    }
     if (!DataTypeAttribute.isNumber(dataTypeAttribute1)) {
       predicate.setFirstExpression(cast(predicate.getFirstExpression(), DataTypeAttribute.INTEGER));
     }
@@ -420,6 +430,18 @@ public class SemanticParser {
     DataTypeAttribute q = analyzeCheckExpression(predicate.getFirstExpression());
     DataTypeAttribute p = analyzeCheckExpression(predicate.getSecondExpression());
     boolean swapped = false;
+
+    // Check for NULL data type
+    if (DataTypeAttribute.NULL.equals(q)) {
+      throw new UnexpectedDataTypeSemanticException(DataTypeAttribute.NULL, predicate.getOperator().getLineNumber());
+    }
+    if (DataTypeAttribute.NULL.equals(p)) {
+      if (SpecialCharacterToken.EQUAL.equals(predicate.getOperator().getOperator()) ||
+          SpecialCharacterToken.NOT_EQUAL.equals(predicate.getOperator().getOperator())) {
+        return DataTypeAttribute.BOOLEAN;
+      }
+      throw new UnexpectedOperatorTypeSemanticException(predicate.getOperator(), DataTypeAttribute.NULL);
+    }
 
     // No need for casting
     if (p.equals(q)) {
@@ -525,6 +547,7 @@ public class SemanticParser {
    */
   private DataTypeAttribute analyzeCheckOperand(Operand operand) throws SemanticException {
     if (operand instanceof ColumnOperand) {
+      currentColumn = currentTable.getColumn(operand.getOperand().getValue());
       return currentTable.getColumn(operand.getOperand().getValue()).getDataType();
     }
     else if (operand instanceof ConstantOperand) {
@@ -538,9 +561,14 @@ public class SemanticParser {
       }
     }
     else if (operand instanceof KeywordOperand) {
-      String value = operand.getOperand().getValue().toLowerCase();
-      if (value.equals(KeywordToken.TRUE.toString().toLowerCase()) || value.equals(KeywordToken.FALSE.toString().toLowerCase())) {
+      if (KeywordToken.TRUE.equals(operand.getOperand()) || KeywordToken.FALSE.equals(operand.getOperand())) {
         return DataTypeAttribute.BOOLEAN;
+      }
+      if (KeywordToken.DEFAULT.equals(operand.getOperand()) && !Objects.isNull(currentColumn)) {
+        return currentColumn.getDataType();
+      }
+      if (KeywordToken.NULL.equals(operand.getOperand())) {
+        return DataTypeAttribute.NULL;
       }
     }
     else if (operand instanceof IntervalDataTypeOperand) {
@@ -552,7 +580,7 @@ public class SemanticParser {
     else if (operand instanceof DataTypeOperand) {
       return DataTypeAttribute.convertToDataTypeAttribute(operand.getOperand().getValue());
     }
-    throw new UnsupportedOperandTypeSemanticException(operand);
+    throw new UnexpectedOperandTypeSemanticException(operand);
   }
 
   /**
