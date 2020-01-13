@@ -141,6 +141,9 @@ public class SemanticParser {
     columnAttribute.setDataType(DataTypeAttribute.convertToDataTypeAttribute(dataType));
     if (!Objects.isNull(dataType.getPrecisionOrLength())) {
       columnAttribute.setLength(Integer.valueOf(columnDefinition.getDataType().getPrecisionOrLength().getValue()));
+      if (!Objects.isNull(dataType.getScale())) {
+        columnAttribute.setScale(Integer.valueOf(columnDefinition.getDataType().getScale().getValue()));
+      }
     }
 
     fillConstraintAttributes(columnAttribute, columnDefinition.getConstraintList());

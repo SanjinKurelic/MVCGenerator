@@ -11,6 +11,7 @@ public class ColumnAttribute {
   private Token columnName;
   private DataTypeAttribute dataType;
   private Integer length;
+  private Integer scale;
   private Token defaultValue;
   // Constraints
   private boolean primary = false;
@@ -45,6 +46,14 @@ public class ColumnAttribute {
 
   public void setLength(Integer length) {
     this.length = length;
+  }
+
+  public Integer getScale() {
+    return scale;
+  }
+
+  public void setScale(Integer scale) {
+    this.scale = scale;
   }
 
   public Token getDefaultValue() {
