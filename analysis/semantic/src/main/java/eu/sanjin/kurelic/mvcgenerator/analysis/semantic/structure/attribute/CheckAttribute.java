@@ -20,6 +20,10 @@ public class CheckAttribute {
     return checkExpressions;
   }
 
+  public void setCheckExpressions(ArrayList<Expression> checkExpressions) {
+    this.checkExpressions = checkExpressions;
+  }
+
   @Override
   public String toString() {
     StringBuilder stringBuilder = new StringBuilder();

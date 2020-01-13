@@ -1,6 +1,7 @@
 package eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.SemanticAnalyzer;
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.parser.IntermediateCodeParser;
 
 public class IntermediateCodeSynthesis {
@@ -16,5 +17,9 @@ public class IntermediateCodeSynthesis {
     semanticAnalyzer.parse(code);
     intermediateCodeParser = new IntermediateCodeParser(semanticAnalyzer.getSemanticAttributeTable());
     intermediateCodeParser.parse();
+  }
+
+  public SemanticAttributeTable getSemanticAttributeTable() {
+    return semanticAnalyzer.getSemanticAttributeTable();
   }
 }
