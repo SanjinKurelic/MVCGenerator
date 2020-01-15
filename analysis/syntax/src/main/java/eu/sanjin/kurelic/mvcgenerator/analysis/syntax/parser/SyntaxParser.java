@@ -962,6 +962,13 @@ public class SyntaxParser {
       || token.equalsToken(KeywordToken.SESSION_USER) || token.equalsToken(KeywordToken.SYSTEM_USER)) {
       value = new KeywordOperand(token.getToken());
       token.next(); // "USER" | "CURRENT_USER" | "SESSION_USER" | "SYSTEM_USER"
+    } else if (token.equalsToken(KeywordToken.CURRENT_DATE) || token.equalsToken(KeywordToken.CURRENT_TIME)
+      || token.equalsToken(KeywordToken.CURRENT_TIMESTAMP)) {
+      value = new KeywordOperand(token.getToken());
+      token.next(); // "CURRENT_DATE" | "CURRENT_TIME" | "CURRENT_TIMESTAMP"
+      if (!token.equalsToken(KeywordToken.CURRENT_DATE) && token.equalsToken(SpecialCharacterToken.LEFT_BRACKET)) {
+        precision(); // [ <Precision> ]
+      }
     } else if (token.getToken().getTokenType() == TokenType.CONSTANT_INTEGER_VALUE
       || token.getToken().getTokenType() == TokenType.CONSTANT_REAL_NUMBER_VALUE
       || token.getToken().getTokenType() == TokenType.CONSTANT_QUOTED_VALUE) {

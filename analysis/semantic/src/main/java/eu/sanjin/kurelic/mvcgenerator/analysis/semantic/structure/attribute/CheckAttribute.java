@@ -3,6 +3,7 @@ package eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CheckAttribute {
 
@@ -20,8 +21,8 @@ public class CheckAttribute {
     return checkExpressions;
   }
 
-  public void setCheckExpressions(ArrayList<Expression> checkExpressions) {
-    this.checkExpressions = checkExpressions;
+  public void setCheckExpressions(List<Expression> checkExpressions) {
+    this.checkExpressions = new ArrayList<>(checkExpressions);
   }
 
   @Override

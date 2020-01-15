@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 public class IntermediateCodeParser {
 
   private SemanticAttributeTable semanticAttributeTable;
+  private TableAttribute currentTable;
 
   public IntermediateCodeParser(SemanticAttributeTable semanticAttributeTable) {
     this.semanticAttributeTable = semanticAttributeTable;
@@ -31,6 +32,7 @@ public class IntermediateCodeParser {
     ArrayList<Expression> checkExpressions;
     for(TableAttribute table : semanticAttributeTable.getTables().values()) {
       checkExpressions = new ArrayList<>();
+      currentTable = table;
       for (Expression expression : table.getCheckAttribute().getCheckExpressions()) {
         checkExpressions.addAll(checkExpression(expression));
       }
@@ -56,9 +58,24 @@ public class IntermediateCodeParser {
   private List<Expression> optimizeCheckExpressions(List<Expression> checkExpressions) {
     for (Expression expression : checkExpressions) {
       if (expression instanceof BinaryPredicate) {
-
-        return; // TODO
+        if (((BinaryPredicate) expression).getFirstExpression() instanceof Operand) {
+          // operand <operator> operand
+          // operand => keywordOperand, columnOperand, constantOperand
+          // keywordOperand => true, false, unknown, default, null, (user, current_user, system_user, session_user), current_date, current_time, current_timestamp
+          // <operator> => rational (class)
+          // operand => unaryPredicate (not, plus, minus) - return Token
+        }
       }
     }
+    return checkExpressions;
+  }
+
+  private boolean isSimple(Expression expression) {
+    if (expression instanceof UnaryPredicate &&
+      SpecialCharacterToken.PLUS.equals(((UnaryPredicate) expression).getOperator().getOperator()) &&
+      SpecialCharacterToken.MINUS.equals(((UnaryPredicate) expression).getOperator().getOperator())) {
+      return false;
+    }
+    return true;
   }
 }

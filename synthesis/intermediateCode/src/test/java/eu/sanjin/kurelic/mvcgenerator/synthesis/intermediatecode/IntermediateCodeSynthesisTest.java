@@ -22,7 +22,7 @@ class IntermediateCodeSynthesisTest {
     code.append("dateOfBirth DATE CHECK (dateOfBirth <= CAST('2001-01-01' AS DATE)),").append("\n");
     code.append("grade FLOAT DEFAULT 0.0,").append("\n");
     code.append("address INT,").append("\n");
-    code.append("CHECK (id > 0 AND grade BETWEEN DEFAULT AND 5 AND name IS NOT NULL),").append("\n");
+    code.append("CHECK (NOT(id > -5) AND grade BETWEEN DEFAULT AND +5 AND name IS NOT NULL),").append("\n");
     code.append("CONSTRAINT FK_address FOREIGN KEY (address) REFERENCES \"Address Table\" (id)").append("\n");
     code.append(");").append("\n");
     code.append("CREATE TABLE \"Address Table\"(").append("\n");
