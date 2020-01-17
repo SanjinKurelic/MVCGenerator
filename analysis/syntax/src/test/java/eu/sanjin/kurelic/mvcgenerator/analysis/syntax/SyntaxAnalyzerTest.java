@@ -14,7 +14,7 @@ class SyntaxAnalyzerTest {
 
   @Test
   void smallExample() {
-    String sql = "CREATE TABLE Student (id INT CHECK(id > 5 OR id BETWEEN 0 AND 1));";
+    String sql = "CREATE TABLE Student (id INT CHECK(id >  2 + 2 * 2));"; // OR id BETWEEN 0 AND 1
     try {
       syntaxAnalyzer.parse(sql);
       System.out.println(syntaxAnalyzer.getSyntaxTree());
