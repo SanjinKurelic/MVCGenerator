@@ -1,11 +1,17 @@
 package eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure;
 
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
+
 public class ExtendedDateColumnAttribute extends ExtendedColumnAttribute {
 
   private Boolean isFuture;
   private Boolean isFutureOrPresent;
   private Boolean isPast;
   private Boolean isPastOrPresent;
+
+  public ExtendedDateColumnAttribute(ColumnAttribute columnAttribute) {
+    super(columnAttribute);
+  }
 
   public Boolean getFuture() {
     return isFuture;

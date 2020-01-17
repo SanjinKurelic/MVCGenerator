@@ -8,7 +8,6 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.entity.SpecialC
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.SemanticAttributeTable;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.TableAttribute;
-import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.components.DataTypeAttribute;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.Expression;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ColumnOperand;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.operand.ConstantOperand;
@@ -18,7 +17,14 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.Predicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.ValidationMismatchIntermediateCodeException;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedBooleanColumnAttribute;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedColumnAttribute;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedDateColumnAttribute;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedIntegerColumnAttribute;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedRealColumnAttribute;
 
+import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,7 +51,7 @@ public class IntermediateCodeParser {
 
   private void simplifyCheckExpressions() {
     ArrayList<Expression> checkExpressions;
-    for(TableAttribute table : semanticAttributeTable.getTables().values()) {
+    for (TableAttribute table : semanticAttributeTable.getTables().values()) {
       checkExpressions = new ArrayList<>();
       currentTable = table;
       for (Expression expression : table.getCheckAttribute().getCheckExpressions()) {
@@ -82,15 +88,14 @@ public class IntermediateCodeParser {
       operand = null;
 
       if (expression instanceof BinaryPredicate
-          && SpecialCharacterClass.RATIONAL.equals(((BinaryPredicate) expression).getOperator().getOperator().getRootType())) {
+        && SpecialCharacterClass.RATIONAL.equals(((BinaryPredicate) expression).getOperator().getOperator().getRootType())) {
         firstOperand = getSimpleExpression(((BinaryPredicate) expression).getFirstExpression());
         secondOperand = getSimpleExpression(((BinaryPredicate) expression).getSecondExpression());
 
         if (!Objects.isNull(firstOperand) && !Objects.isNull(secondOperand) && !Objects.isNull(currentColumn)) {
           if (firstOperand.getValue().equals(currentColumn.getColumnName().getValue())) {
             operand = secondOperand;
-          }
-          else if (secondOperand.getValue().equals(currentColumn.getColumnName().getValue())){
+          } else if (secondOperand.getValue().equals(currentColumn.getColumnName().getValue())) {
             operand = firstOperand;
           }
           // Remove expression that is converted to attribute validation
@@ -112,8 +117,7 @@ public class IntermediateCodeParser {
   private Token getSimpleExpression(Expression expression) {
     if (expression instanceof Operand) {
       return getSimpleOperand((Operand) expression);
-    }
-    else if (expression instanceof UnaryPredicate) {
+    } else if (expression instanceof UnaryPredicate) {
       return getSimplePredicate((Predicate) expression);
     }
     return null;
@@ -122,7 +126,7 @@ public class IntermediateCodeParser {
   /**
    * Only ColumnOperand, KeywordOperand and ConstantOperand are supported.
    * Only these keywords are supported in KeywordOperand: true, false, unknown, default, null, current_date, current_time, current_timestamp
-   *
+   * <p>
    * Set flag for removing expression that have these keywords as they are part of database engine: user, current_user, system_user, session_user
    */
   private Token getSimpleOperand(Operand operand) {
@@ -132,14 +136,14 @@ public class IntermediateCodeParser {
     }
     // Remove expressions containing keywords user, current_user, system_user, session_user as they are part of database engine
     if (KeywordToken.USER.equals(operand.getOperand()) || KeywordToken.CURRENT_USER.equals(operand.getOperand()) ||
-        KeywordToken.SYSTEM_USER.equals(operand.getOperand()) || KeywordToken.SESSION_USER.equals(operand.getOperand())) {
+      KeywordToken.SYSTEM_USER.equals(operand.getOperand()) || KeywordToken.SESSION_USER.equals(operand.getOperand())) {
       removeExpression = true;
       return null;
     }
     // Check allowed keywords
-    KeywordToken[] allowedKeywords = new KeywordToken[] {
-        KeywordToken.TRUE, KeywordToken.FALSE, KeywordToken.UNKNOWN, KeywordToken.DEFAULT, KeywordToken.NULL,
-        KeywordToken.CURRENT_DATE, KeywordToken.CURRENT_TIME, KeywordToken.CURRENT_TIMESTAMP
+    KeywordToken[] allowedKeywords = new KeywordToken[]{
+      KeywordToken.TRUE, KeywordToken.FALSE, KeywordToken.UNKNOWN, KeywordToken.DEFAULT, KeywordToken.NULL,
+      KeywordToken.CURRENT_DATE, KeywordToken.CURRENT_TIME, KeywordToken.CURRENT_TIMESTAMP
     };
     if (operand instanceof KeywordOperand && Arrays.stream(allowedKeywords).noneMatch(k -> k.equals(operand.getOperand()))) {
       return null;
@@ -163,15 +167,15 @@ public class IntermediateCodeParser {
    * Calculate NOT, MINUS and PLUS unary operations. If operations are done on Column operand than this method
    * return null because that case is complex predicate. Only constant integer, constant real and keywords true,
    * false, unknown, null are supported
-   *
+   * <p>
    * MINUS => 5 -> -5, 5.5 -> -5.5
    * NOT => true -> false, false -> true, null/unknown -> not_null, not_null -> null
    */
   private Token getSimplePredicate(Predicate predicate) {
     if (!(predicate instanceof UnaryPredicate) ||
-        (!SpecialCharacterToken.PLUS.equals(predicate.getOperator().getOperator()) &&
-            !SpecialCharacterToken.MINUS.equals(predicate.getOperator().getOperator()) &&
-            !SpecialCharacterToken.NOT.equals(predicate.getOperator().getOperator()))) {
+      (!SpecialCharacterToken.PLUS.equals(predicate.getOperator().getOperator()) &&
+        !SpecialCharacterToken.MINUS.equals(predicate.getOperator().getOperator()) &&
+        !SpecialCharacterToken.NOT.equals(predicate.getOperator().getOperator()))) {
       return null;
     }
     Token value = getSimpleExpression(((UnaryPredicate) predicate).getExpression());
@@ -182,8 +186,7 @@ public class IntermediateCodeParser {
     if (SpecialCharacterToken.MINUS.equals(predicate.getOperator().getOperator())) {
       if (TokenType.CONSTANT_INTEGER_VALUE.equals(value.getTokenType())) {
         value.setValue(String.valueOf(-Integer.parseInt(value.getValue())));
-      }
-      else if (TokenType.CONSTANT_REAL_NUMBER_VALUE.equals(value.getTokenType())) {
+      } else if (TokenType.CONSTANT_REAL_NUMBER_VALUE.equals(value.getTokenType())) {
         value.setValue(String.valueOf(-Double.parseDouble(value.getValue())));
       }
       // Minus on unsupported operand
@@ -206,14 +209,11 @@ public class IntermediateCodeParser {
 
     if (KeywordToken.TRUE.equals(value)) {
       value.setValue(KeywordToken.FALSE.toString());
-    }
-    else if (KeywordToken.FALSE.equals(value)) {
+    } else if (KeywordToken.FALSE.equals(value)) {
       value.setValue(KeywordToken.TRUE.toString());
-    }
-    else if (KeywordToken.UNKNOWN.equals(value) || KeywordToken.NULL.equals(value)) {
+    } else if (KeywordToken.UNKNOWN.equals(value) || KeywordToken.NULL.equals(value)) {
       value.setValue(NOT_NULL);
-    }
-    else if (value.getValue().equals(NOT_NULL)) {
+    } else if (value.getValue().equals(NOT_NULL)) {
       value.setValue(KeywordToken.NULL.toString());
     }
     // Not supported operand (only true, false, null, unknown and not_null are supported)
@@ -226,15 +226,16 @@ public class IntermediateCodeParser {
 
   /**
    * operator => <, > -> numericMin, numericMax, isFuture, isFutureOrPresent, isPast, isPastOrPresent
-   * operator => =, != -> assertTrue, assertNotTrue, assertFalse, assertNotFalse, assertUnknown, assertNotUnknown
+   * operator => =, != -> assertTrue, assertFalse, assertUnknown, assertNotUnknown
    */
   private boolean appendAttributes(Token value, Operator operator) {
     switch (currentColumn.getDataType()) {
       case BOOLEAN:
         return appendBooleanAttributes(value, operator);
       case INTEGER:
+        return appendIntegerAttributes(value, operator);
       case REAL:
-        return  appendNumberAttributes(value, operator);
+        return appendRealAttributes(value, operator);
       case DATE:
       case DATETIME:
       case TIME:
@@ -245,19 +246,218 @@ public class IntermediateCodeParser {
       default:
         return false;
     }
-    // Save
-    currentTable.getColumns().put(currentColumn.getColumnName().getValue(), null);
   }
 
   private boolean appendBooleanAttributes(Token value, Operator operator) {
+    if (!SpecialCharacterToken.EQUAL.equals(operator.getOperator()) && !SpecialCharacterToken.NOT_EQUAL.equals(operator.getOperator())) {
+      return false;
+    }
     if (SpecialCharacterToken.NOT_EQUAL.equals(operator.getOperator())) {
       value = inverseBooleanValue(value);
+      // should not happen
+      if (Objects.isNull(value)) {
+        return false;
+      }
     }
+    // Initialize extended attribute
+    ExtendedBooleanColumnAttribute columnAttribute;
+    if (currentColumn instanceof ExtendedBooleanColumnAttribute) {
+      columnAttribute = (ExtendedBooleanColumnAttribute) currentColumn;
+    } else {
+      columnAttribute = new ExtendedBooleanColumnAttribute(currentColumn);
+    }
+    // Set attributes
+    if (KeywordToken.TRUE.equals(value)) {
+      if (columnAttribute.getAssertTrue().equals(Boolean.FALSE) || columnAttribute.getAssertFalse().equals(Boolean.TRUE)) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      columnAttribute.setAssertTrue(true);
+      columnAttribute.setAssertFalse(false);
+    } else if (KeywordToken.FALSE.equals(value)) {
+      if (columnAttribute.getAssertTrue().equals(Boolean.TRUE) || columnAttribute.getAssertFalse().equals(Boolean.FALSE)) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      columnAttribute.setAssertTrue(false);
+      columnAttribute.setAssertFalse(true);
+    } else if (NOT_NULL.equals(value.getValue())) {
+      // If not null is false (can be null) - throw validation mismatch
+      if (!Objects.isNull(columnAttribute.isNotNull()) && !columnAttribute.isNotNull()) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      columnAttribute.setNotNull(true);
+    } else { // Unknown or null
+      // If column is not null - throw validation mismatch
+      if (!Objects.isNull(columnAttribute.isNotNull()) && columnAttribute.isNotNull()) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      columnAttribute.setNotNull(false);
+    }
+
+    // Save
+    return saveAttributes(columnAttribute);
   }
 
-  private boolean appendNumberAttributes(Token value, Operator operator) {
+  private boolean appendIntegerAttributes(Token value, Operator operator) {
+    int intValue = Integer.parseInt(value.getValue());
+    // Initialize extended attribute
+    ExtendedIntegerColumnAttribute columnAttribute;
+    if (currentColumn instanceof ExtendedIntegerColumnAttribute) {
+      columnAttribute = (ExtendedIntegerColumnAttribute) currentColumn;
+    } else {
+      columnAttribute = new ExtendedIntegerColumnAttribute(currentColumn);
+    }
+    // Set attributes
+    if (SpecialCharacterToken.LESS_EQUAL.equals(operator.getOperator())) {
+      // If current max is smaller than new one
+      if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < intValue) {
+        return false;
+      }
+      columnAttribute.setMax(intValue);
+    }
+    else if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
+      // If current max is smaller than new one
+      if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < (intValue - 1)) {
+        return false;
+      }
+      columnAttribute.setMax(intValue - 1);
+    }
+    else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
+      // If current min is bigger than new one
+      if (!Objects.isNull(columnAttribute.getMin()) && columnAttribute.getMin() > intValue) {
+        return false;
+      }
+      columnAttribute.setMin(intValue);
+    }
+    else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
+      // If current min is bigger than new one
+      if (!Objects.isNull(columnAttribute.getMin()) && columnAttribute.getMin() > (intValue + 1)) {
+        return false;
+      }
+      columnAttribute.setMin(intValue + 1);
+    }
+    // Unsupported operator
+    else {
+      return false;
+    }
+
+    // Save
+    return saveAttributes(columnAttribute);
   }
 
+  private boolean appendRealAttributes(Token value, Operator operator) {
+    double realValue = Double.parseDouble(value.getValue());
+    // Initialize extended attribute
+    ExtendedRealColumnAttribute columnAttribute;
+    if (currentColumn instanceof ExtendedRealColumnAttribute) {
+      columnAttribute = (ExtendedRealColumnAttribute) currentColumn;
+    } else {
+      columnAttribute = new ExtendedRealColumnAttribute(currentColumn);
+    }
+    // Set attributes
+    if (SpecialCharacterToken.LESS_EQUAL.equals(operator.getOperator())) {
+      if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < realValue) {
+        return false;
+      }
+      // TODO uzeti u obzir i inclusive
+    }
+    else if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
+
+    }
+    else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
+
+    }
+    else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
+
+    }
+    // Unsupported operator
+    else {
+      return false;
+    }
+
+    // Save
+    return saveAttributes(columnAttribute);
+  }
+
+  /**
+   * Add attributes that check if date column attribute is in past or future.
+   * This method only accepts values that are keywords: CURRENT_DATE, CURRENT_TIME and CURRENT_TIMESTAMP
+   */
   private boolean appendDateAttributes(Token value, Operator operator) {
+    if (!TokenType.KEYWORD.equals(value.getTokenType())) {
+      return false;
+    }
+    if (!KeywordToken.CURRENT_DATE.equals(value) && !KeywordToken.CURRENT_TIME.equals(value) &&
+      !KeywordToken.CURRENT_TIMESTAMP.equals(value)) {
+      return false;
+    }
+    // Initialize extended attribute
+    ExtendedDateColumnAttribute columnAttribute;
+    if (currentColumn instanceof ExtendedDateColumnAttribute) {
+      columnAttribute = (ExtendedDateColumnAttribute) currentColumn;
+    } else {
+      columnAttribute = new ExtendedDateColumnAttribute(currentColumn);
+    }
+    // Set attributes
+    // Past
+    if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
+      // If future is already set
+      if (Boolean.TRUE.equals(columnAttribute.getFuture()) || Boolean.TRUE.equals(columnAttribute.getFutureOrPresent())) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      setDateAttributesOnColumn(columnAttribute, true, false, false, false);
+    }
+    // Past or present
+    else if (SpecialCharacterToken.LESS_EQUAL.equals(operator.getOperator())) {
+      // Past is more specific validation - we skip this validation
+      if (Boolean.TRUE.equals(columnAttribute.getPast())) {
+        return true;
+      }
+      // If future is already set
+      if (Boolean.TRUE.equals(columnAttribute.getFuture()) || Boolean.TRUE.equals(columnAttribute.getFutureOrPresent())) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      setDateAttributesOnColumn(columnAttribute, false, true, false, false);
+    }
+    // Future
+    else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
+      // Future or present is more specific validation - we skip this validation
+      if (Boolean.TRUE.equals(columnAttribute.getFutureOrPresent())) {
+        return true;
+      }
+      // If past is already set
+      if (Boolean.TRUE.equals(columnAttribute.getPast()) || Boolean.TRUE.equals(columnAttribute.getPastOrPresent())) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      setDateAttributesOnColumn(columnAttribute, false, false, true, false);
+    }
+    // Future or present
+    else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
+      // If past is already set
+      if (Boolean.TRUE.equals(columnAttribute.getPast()) || Boolean.TRUE.equals(columnAttribute.getPastOrPresent())) {
+        throw new ValidationMismatchIntermediateCodeException();
+      }
+      setDateAttributesOnColumn(columnAttribute, false, false, false, true);
+    }
+    // Unsupported operator
+    else {
+      return false;
+    }
+
+    // Save
+    return saveAttributes(columnAttribute);
+  }
+
+  private void setDateAttributesOnColumn(ExtendedDateColumnAttribute column,
+                                         boolean past, boolean pastOrPresent,
+                                         boolean future, boolean futureOrPresent) {
+    column.setPast(past);
+    column.setPastOrPresent(pastOrPresent);
+    column.setFuture(future);
+    column.setFutureOrPresent(futureOrPresent);
+  }
+
+  private boolean saveAttributes(ExtendedColumnAttribute columnAttribute) {
+    currentTable.getColumns().put(currentColumn.getColumnName().getValue(), columnAttribute);
+    return true;
   }
 }

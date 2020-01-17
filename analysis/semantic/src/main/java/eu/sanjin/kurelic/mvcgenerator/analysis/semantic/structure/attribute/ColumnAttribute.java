@@ -16,7 +16,7 @@ public class ColumnAttribute {
   // Constraints
   private boolean primary = false;
   private boolean unique = false;
-  private boolean notNull = false;
+  private Boolean notNull; // Unknown by default
   private boolean foreign = false;
   // Reference constraints
   private Token foreignTable;
@@ -80,11 +80,11 @@ public class ColumnAttribute {
     this.unique = unique;
   }
 
-  public boolean isNotNull() {
+  public Boolean isNotNull() {
     return notNull;
   }
 
-  public void setNotNull(boolean notNull) {
+  public void setNotNull(Boolean notNull) {
     this.notNull = notNull;
   }
 

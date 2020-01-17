@@ -1,10 +1,15 @@
 package eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure;
 
+import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
+
 public class ExtendedBooleanColumnAttribute extends ExtendedColumnAttribute{
 
   private Boolean assertTrue;
   private Boolean assertFalse;
-  private Boolean assertUnknown;
+
+  public ExtendedBooleanColumnAttribute(ColumnAttribute columnAttribute) {
+    super(columnAttribute);
+  }
 
   public Boolean getAssertTrue() {
     return assertTrue;
@@ -20,13 +25,5 @@ public class ExtendedBooleanColumnAttribute extends ExtendedColumnAttribute{
 
   public void setAssertFalse(Boolean assertFalse) {
     this.assertFalse = assertFalse;
-  }
-
-  public Boolean getAssertUnknown() {
-    return assertUnknown;
-  }
-
-  public void setAssertUnknown(Boolean assertUnknown) {
-    this.assertUnknown = assertUnknown;
   }
 }

@@ -199,9 +199,9 @@ public class SemanticParser {
    * @throws SemanticException - if we define multiple reference clause on column
    */
   private void fillConstraintAttributes(ColumnAttribute columnAttribute, ConstraintList constraintList, int referenceIndex) throws SemanticException {
-    columnAttribute.setNotNull(constraintList.stream().anyMatch(PrimaryKeyConstraint.class::isInstance));
-    columnAttribute.setNotNull(constraintList.stream().anyMatch(UniqueConstraint.class::isInstance));
-    columnAttribute.setNotNull(constraintList.stream().anyMatch(NotNullConstraint.class::isInstance));
+    columnAttribute.setPrimary(constraintList.stream().anyMatch(PrimaryKeyConstraint.class::isInstance));
+    columnAttribute.setUnique(constraintList.stream().anyMatch(UniqueConstraint.class::isInstance));
+    columnAttribute.setNotNull(constraintList.stream().anyMatch(NotNullConstraint.class::isInstance) ? Boolean.TRUE : null);
 
     // Reference constraint
     if (constraintList.stream().anyMatch(ReferenceConstraint.class::isInstance)) {
