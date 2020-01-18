@@ -17,6 +17,8 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.ele
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.BinaryPredicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.Predicate;
 import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.create.table.element.constraint.check.predicate.UnaryPredicate;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.IntermediateCodeException;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.MinMaxIntermediateCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.ValidationMismatchIntermediateCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedBooleanColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedColumnAttribute;
@@ -24,7 +26,6 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.Exten
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedIntegerColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedRealColumnAttribute;
 
-import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,21 +36,24 @@ import java.util.stream.Stream;
 
 public class IntermediateCodeParser {
 
+  private static final String NOT_NULL = "NOT_NULL";
+  private static final String IN_FUTURE = "IN FUTURE";
+  private static final String IN_PAST = "IN PAST";
+
   private SemanticAttributeTable semanticAttributeTable;
   private TableAttribute currentTable;
   private ColumnAttribute currentColumn;
   private boolean removeExpression;
-  private static final String NOT_NULL = "NOT_NULL";
 
   public IntermediateCodeParser(SemanticAttributeTable semanticAttributeTable) {
     this.semanticAttributeTable = semanticAttributeTable;
   }
 
-  public void parse() {
+  public void parse() throws IntermediateCodeException {
     simplifyCheckExpressions();
   }
 
-  private void simplifyCheckExpressions() {
+  private void simplifyCheckExpressions() throws IntermediateCodeException {
     ArrayList<Expression> checkExpressions;
     for (TableAttribute table : semanticAttributeTable.getTables().values()) {
       checkExpressions = new ArrayList<>();
@@ -79,7 +83,7 @@ public class IntermediateCodeParser {
   /**
    * Optimize rational binary predicates
    */
-  private List<Expression> optimizeCheckExpressions(List<Expression> checkExpressions) {
+  private List<Expression> optimizeCheckExpressions(List<Expression> checkExpressions) throws IntermediateCodeException {
     Token firstOperand, secondOperand, operand;
     ArrayList<Expression> removeExpressions = new ArrayList<>();
     for (Expression expression : checkExpressions) {
@@ -228,7 +232,7 @@ public class IntermediateCodeParser {
    * operator => <, > -> numericMin, numericMax, isFuture, isFutureOrPresent, isPast, isPastOrPresent
    * operator => =, != -> assertTrue, assertFalse, assertUnknown, assertNotUnknown
    */
-  private boolean appendAttributes(Token value, Operator operator) {
+  private boolean appendAttributes(Token value, Operator operator) throws IntermediateCodeException {
     switch (currentColumn.getDataType()) {
       case BOOLEAN:
         return appendBooleanAttributes(value, operator);
@@ -248,7 +252,7 @@ public class IntermediateCodeParser {
     }
   }
 
-  private boolean appendBooleanAttributes(Token value, Operator operator) {
+  private boolean appendBooleanAttributes(Token value, Operator operator) throws IntermediateCodeException {
     if (!SpecialCharacterToken.EQUAL.equals(operator.getOperator()) && !SpecialCharacterToken.NOT_EQUAL.equals(operator.getOperator())) {
       return false;
     }
@@ -269,26 +273,26 @@ public class IntermediateCodeParser {
     // Set attributes
     if (KeywordToken.TRUE.equals(value)) {
       if (columnAttribute.getAssertTrue().equals(Boolean.FALSE) || columnAttribute.getAssertFalse().equals(Boolean.TRUE)) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.TRUE.toString(), KeywordToken.FALSE.toString());
       }
       columnAttribute.setAssertTrue(true);
       columnAttribute.setAssertFalse(false);
     } else if (KeywordToken.FALSE.equals(value)) {
       if (columnAttribute.getAssertTrue().equals(Boolean.TRUE) || columnAttribute.getAssertFalse().equals(Boolean.FALSE)) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.TRUE.toString(), KeywordToken.FALSE.toString());
       }
       columnAttribute.setAssertTrue(false);
       columnAttribute.setAssertFalse(true);
     } else if (NOT_NULL.equals(value.getValue())) {
       // If not null is false (can be null) - throw validation mismatch
       if (!Objects.isNull(columnAttribute.isNotNull()) && !columnAttribute.isNotNull()) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
       }
       columnAttribute.setNotNull(true);
     } else { // Unknown or null
       // If column is not null - throw validation mismatch
       if (!Objects.isNull(columnAttribute.isNotNull()) && columnAttribute.isNotNull()) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
       }
       columnAttribute.setNotNull(false);
     }
@@ -297,7 +301,7 @@ public class IntermediateCodeParser {
     return saveAttributes(columnAttribute);
   }
 
-  private boolean appendIntegerAttributes(Token value, Operator operator) {
+  private boolean appendIntegerAttributes(Token value, Operator operator) throws IntermediateCodeException {
     int intValue = Integer.parseInt(value.getValue());
     // Initialize extended attribute
     ExtendedIntegerColumnAttribute columnAttribute;
@@ -310,28 +314,25 @@ public class IntermediateCodeParser {
     if (SpecialCharacterToken.LESS_EQUAL.equals(operator.getOperator())) {
       // If current max is smaller than new one
       if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < intValue) {
-        return false;
+        return true;
       }
       columnAttribute.setMax(intValue);
-    }
-    else if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
+    } else if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
       // If current max is smaller than new one
       if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < (intValue - 1)) {
-        return false;
+        return true;
       }
       columnAttribute.setMax(intValue - 1);
-    }
-    else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
+    } else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
       // If current min is bigger than new one
       if (!Objects.isNull(columnAttribute.getMin()) && columnAttribute.getMin() > intValue) {
-        return false;
+        return true;
       }
       columnAttribute.setMin(intValue);
-    }
-    else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
+    } else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
       // If current min is bigger than new one
       if (!Objects.isNull(columnAttribute.getMin()) && columnAttribute.getMin() > (intValue + 1)) {
-        return false;
+        return true;
       }
       columnAttribute.setMin(intValue + 1);
     }
@@ -339,12 +340,17 @@ public class IntermediateCodeParser {
     else {
       return false;
     }
+    // Check min-max
+    if (!Objects.isNull(columnAttribute.getMin()) && !Objects.isNull(columnAttribute.getMax())
+      && columnAttribute.getMin() >= columnAttribute.getMax()) {
+      throw new MinMaxIntermediateCodeException(columnAttribute, columnAttribute.getMin(), columnAttribute.getMax());
+    }
 
     // Save
     return saveAttributes(columnAttribute);
   }
 
-  private boolean appendRealAttributes(Token value, Operator operator) {
+  private boolean appendRealAttributes(Token value, Operator operator) throws IntermediateCodeException {
     double realValue = Double.parseDouble(value.getValue());
     // Initialize extended attribute
     ExtendedRealColumnAttribute columnAttribute;
@@ -356,22 +362,45 @@ public class IntermediateCodeParser {
     // Set attributes
     if (SpecialCharacterToken.LESS_EQUAL.equals(operator.getOperator())) {
       if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < realValue) {
-        return false;
+        return true;
       }
-      // TODO uzeti u obzir i inclusive
-    }
-    else if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
-
-    }
-    else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
-
-    }
-    else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
-
+      columnAttribute.setMax(realValue);
+      columnAttribute.setInclusiveMax(true);
+    } else if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
+      if (!Objects.isNull(columnAttribute.getMax()) && columnAttribute.getMax() < realValue) {
+        return true;
+      }
+      // Inclusive is more specific operator
+      if (columnAttribute.getMax().equals(realValue) && columnAttribute.isInclusiveMax()) {
+        return true;
+      }
+      columnAttribute.setMax(realValue);
+      columnAttribute.setInclusiveMax(false);
+    } else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
+      if (!Objects.isNull(columnAttribute.getMin()) && columnAttribute.getMin() > realValue) {
+        return true;
+      }
+      columnAttribute.setMin(realValue);
+      columnAttribute.setInclusiveMin(true);
+    } else if (SpecialCharacterToken.GREATER.equals(operator.getOperator())) {
+      if (!Objects.isNull(columnAttribute.getMin()) && columnAttribute.getMin() > realValue) {
+        return true;
+      }
+      // Inclusive is more specific operator
+      if (columnAttribute.getMin().equals(realValue) && columnAttribute.isInclusiveMin()) {
+        return true;
+      }
+      columnAttribute.setMin(realValue);
+      columnAttribute.setInclusiveMin(false);
     }
     // Unsupported operator
     else {
       return false;
+    }
+    // Check min-max
+    if (!Objects.isNull(columnAttribute.getMin()) && !Objects.isNull(columnAttribute.getMax())
+      && columnAttribute.getMin() >= columnAttribute.getMax()) {
+      throw new MinMaxIntermediateCodeException(columnAttribute, columnAttribute.getMin(), columnAttribute.getMax());
     }
 
     // Save
@@ -382,7 +411,7 @@ public class IntermediateCodeParser {
    * Add attributes that check if date column attribute is in past or future.
    * This method only accepts values that are keywords: CURRENT_DATE, CURRENT_TIME and CURRENT_TIMESTAMP
    */
-  private boolean appendDateAttributes(Token value, Operator operator) {
+  private boolean appendDateAttributes(Token value, Operator operator) throws IntermediateCodeException {
     if (!TokenType.KEYWORD.equals(value.getTokenType())) {
       return false;
     }
@@ -402,7 +431,7 @@ public class IntermediateCodeParser {
     if (SpecialCharacterToken.LESS.equals(operator.getOperator())) {
       // If future is already set
       if (Boolean.TRUE.equals(columnAttribute.getFuture()) || Boolean.TRUE.equals(columnAttribute.getFutureOrPresent())) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, IN_FUTURE, IN_PAST);
       }
       setDateAttributesOnColumn(columnAttribute, true, false, false, false);
     }
@@ -414,7 +443,7 @@ public class IntermediateCodeParser {
       }
       // If future is already set
       if (Boolean.TRUE.equals(columnAttribute.getFuture()) || Boolean.TRUE.equals(columnAttribute.getFutureOrPresent())) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, IN_FUTURE, IN_PAST);
       }
       setDateAttributesOnColumn(columnAttribute, false, true, false, false);
     }
@@ -426,7 +455,7 @@ public class IntermediateCodeParser {
       }
       // If past is already set
       if (Boolean.TRUE.equals(columnAttribute.getPast()) || Boolean.TRUE.equals(columnAttribute.getPastOrPresent())) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, IN_FUTURE, IN_PAST);
       }
       setDateAttributesOnColumn(columnAttribute, false, false, true, false);
     }
@@ -434,7 +463,7 @@ public class IntermediateCodeParser {
     else if (SpecialCharacterToken.GREATER_EQUAL.equals(operator.getOperator())) {
       // If past is already set
       if (Boolean.TRUE.equals(columnAttribute.getPast()) || Boolean.TRUE.equals(columnAttribute.getPastOrPresent())) {
-        throw new ValidationMismatchIntermediateCodeException();
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, IN_FUTURE, IN_PAST);
       }
       setDateAttributesOnColumn(columnAttribute, false, false, false, true);
     }
@@ -459,5 +488,9 @@ public class IntermediateCodeParser {
   private boolean saveAttributes(ExtendedColumnAttribute columnAttribute) {
     currentTable.getColumns().put(currentColumn.getColumnName().getValue(), columnAttribute);
     return true;
+  }
+
+  public SemanticAttributeTable getSemanticAttributeTable() {
+    return semanticAttributeTable;
   }
 }

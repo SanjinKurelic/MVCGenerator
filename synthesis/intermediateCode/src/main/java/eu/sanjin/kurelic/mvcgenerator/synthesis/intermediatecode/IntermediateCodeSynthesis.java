@@ -20,6 +20,6 @@ public class IntermediateCodeSynthesis {
   }
 
   public SemanticAttributeTable getSemanticAttributeTable() {
-    return semanticAnalyzer.getSemanticAttributeTable();
+    return intermediateCodeParser.getSemanticAttributeTable();
   }
 }
