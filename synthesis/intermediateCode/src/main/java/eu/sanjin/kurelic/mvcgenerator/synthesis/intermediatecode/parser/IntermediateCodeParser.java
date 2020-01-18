@@ -36,9 +36,9 @@ import java.util.stream.Stream;
 
 public class IntermediateCodeParser {
 
-  private static final String NOT_NULL = "NOT_NULL";
-  private static final String IN_FUTURE = "IN FUTURE";
-  private static final String IN_PAST = "IN PAST";
+  private static final String NOT_NULL = "not null";
+  private static final String IN_FUTURE = "in future";
+  private static final String IN_PAST = "in past";
 
   private SemanticAttributeTable semanticAttributeTable;
   private TableAttribute currentTable;
@@ -200,15 +200,20 @@ public class IntermediateCodeParser {
     }
     // Not operator
     if (SpecialCharacterToken.NOT.equals(predicate.getOperator().getOperator())) {
-      value = inverseBooleanValue(value);
+      value = inverseBooleanValue(value, SpecialCharacterToken.NOT_EQUAL);
     }
 
     return value;
   }
 
-  private Token inverseBooleanValue(Token value) {
-    if (!TokenType.KEYWORD.equals(value.getTokenType())) {
+  private Token inverseBooleanValue(Token value, SpecialCharacterToken operator) {
+    if (!TokenType.KEYWORD.equals(value.getTokenType()) && !SpecialCharacterToken.EQUAL.equals(operator) &&
+      !SpecialCharacterToken.NOT_EQUAL.equals(operator)) {
       return null;
+    }
+    // If equal do not inverse value
+    if (SpecialCharacterToken.EQUAL.equals(operator)) {
+      return value;
     }
 
     if (KeywordToken.TRUE.equals(value)) {
@@ -233,6 +238,9 @@ public class IntermediateCodeParser {
    * operator => =, != -> assertTrue, assertFalse, assertUnknown, assertNotUnknown
    */
   private boolean appendAttributes(Token value, Operator operator) throws IntermediateCodeException {
+    if (KeywordToken.NULL.equals(value) || NOT_NULL.equals(value.getValue())) {
+      return appendNullAttribute(value, operator);
+    }
     switch (currentColumn.getDataType()) {
       case BOOLEAN:
         return appendBooleanAttributes(value, operator);
@@ -247,21 +255,14 @@ public class IntermediateCodeParser {
       case INTERVAL:
       case ZONED_DATETIME:
         return appendDateAttributes(value, operator);
-      default:
-        return false;
     }
+    return false;
   }
 
   private boolean appendBooleanAttributes(Token value, Operator operator) throws IntermediateCodeException {
-    if (!SpecialCharacterToken.EQUAL.equals(operator.getOperator()) && !SpecialCharacterToken.NOT_EQUAL.equals(operator.getOperator())) {
+    value = inverseBooleanValue(value, operator.getOperator());
+    if (Objects.isNull(value)) {
       return false;
-    }
-    if (SpecialCharacterToken.NOT_EQUAL.equals(operator.getOperator())) {
-      value = inverseBooleanValue(value);
-      // should not happen
-      if (Objects.isNull(value)) {
-        return false;
-      }
     }
     // Initialize extended attribute
     ExtendedBooleanColumnAttribute columnAttribute;
@@ -283,12 +284,6 @@ public class IntermediateCodeParser {
       }
       columnAttribute.setAssertTrue(false);
       columnAttribute.setAssertFalse(true);
-    } else if (NOT_NULL.equals(value.getValue())) {
-      // If not null is false (can be null) - throw validation mismatch
-      if (!Objects.isNull(columnAttribute.isNotNull()) && !columnAttribute.isNotNull()) {
-        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
-      }
-      columnAttribute.setNotNull(true);
     } else { // Unknown or null
       // If column is not null - throw validation mismatch
       if (!Objects.isNull(columnAttribute.isNotNull()) && columnAttribute.isNotNull()) {
@@ -476,6 +471,25 @@ public class IntermediateCodeParser {
     return saveAttributes(columnAttribute);
   }
 
+  private boolean appendNullAttribute(Token value, Operator operator) throws IntermediateCodeException {
+    value = inverseBooleanValue(value, operator.getOperator());
+    if (Objects.isNull(value)) {
+      return false;
+    }
+    if (KeywordToken.NULL.equals(value)) {
+      if (Boolean.TRUE.equals(currentColumn.isNotNull())) {
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
+      }
+      currentColumn.setNotNull(false);
+    } else {
+      if (Boolean.FALSE.equals(currentColumn.isNotNull())) {
+        throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
+      }
+      currentColumn.setNotNull(true);
+    }
+    return saveAttributes(currentColumn);
+  }
+
   private void setDateAttributesOnColumn(ExtendedDateColumnAttribute column,
                                          boolean past, boolean pastOrPresent,
                                          boolean future, boolean futureOrPresent) {
@@ -485,7 +499,7 @@ public class IntermediateCodeParser {
     column.setFutureOrPresent(futureOrPresent);
   }
 
-  private boolean saveAttributes(ExtendedColumnAttribute columnAttribute) {
+  private boolean saveAttributes(ColumnAttribute columnAttribute) {
     currentTable.getColumns().put(currentColumn.getColumnName().getValue(), columnAttribute);
     return true;
   }

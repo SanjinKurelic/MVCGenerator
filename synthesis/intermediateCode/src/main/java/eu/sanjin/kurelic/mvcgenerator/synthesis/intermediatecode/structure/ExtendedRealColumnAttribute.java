@@ -2,6 +2,8 @@ package eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
 
+import java.util.Objects;
+
 public class ExtendedRealColumnAttribute extends ExtendedColumnAttribute {
 
   private Double min;
@@ -43,5 +45,31 @@ public class ExtendedRealColumnAttribute extends ExtendedColumnAttribute {
 
   public void setInclusiveMax(boolean inclusiveMax) {
     this.inclusiveMax = inclusiveMax;
+  }
+
+  @Override
+  protected String customAttributes() {
+    String minMax = "";
+    if (!Objects.isNull(min)) {
+      minMax += "MINIMUM IS ";
+      if (!Boolean.TRUE.equals(inclusiveMin)) {
+        minMax += "GREATER THEN ";
+      }
+      minMax += min;
+    }
+    if (!Objects.isNull(max)) {
+      if (!minMax.isEmpty()) {
+        minMax += " AND ";
+      }
+      minMax += "MAXIMUM IS ";
+      if (!Boolean.TRUE.equals(inclusiveMax)) {
+        minMax += "GREATER THEN ";
+      }
+      minMax += max;
+    }
+    if (!minMax.isEmpty()) {
+      return " CHECK (" + minMax + ")";
+    }
+    return super.customAttributes();
   }
 }

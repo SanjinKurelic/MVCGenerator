@@ -570,6 +570,19 @@ public class SemanticParser {
       if (KeywordToken.NULL.equals(operand.getOperand())) {
         return DataTypeAttribute.NULL;
       }
+      if (KeywordToken.CURRENT_DATE.equals(operand.getOperand())) {
+        return DataTypeAttribute.DATE;
+      }
+      if (KeywordToken.CURRENT_TIME.equals(operand.getOperand())) {
+        return DataTypeAttribute.TIME;
+      }
+      if (KeywordToken.CURRENT_TIMESTAMP.equals(operand.getOperand())) {
+        return DataTypeAttribute.TIMESTAMP;
+      }
+      if (KeywordToken.USER.equals(operand.getOperand()) || KeywordToken.CURRENT_USER.equals(operand.getOperand())
+        || KeywordToken.SESSION_USER.equals(operand.getOperand()) || KeywordToken.SYSTEM_USER.equals(operand.getOperand())) {
+        return DataTypeAttribute.STRING;
+      }
     }
     else if (operand instanceof IntervalDataTypeOperand) {
       return DataTypeAttribute.INTERVAL;

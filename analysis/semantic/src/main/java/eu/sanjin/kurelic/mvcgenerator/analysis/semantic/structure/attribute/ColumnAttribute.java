@@ -128,6 +128,10 @@ public class ColumnAttribute {
     this.foreignUpdateAction = foreignUpdateAction;
   }
 
+  protected String customAttributes() {
+    return "";
+  }
+
   @Override
   public String toString() {
     String columnDefinition = columnName.getValue() + " " + dataType.name();
@@ -140,7 +144,8 @@ public class ColumnAttribute {
     }
     columnDefinition += (primary ? " PRIMARY KEY" : "");
     columnDefinition += (unique ? " UNIQUE" : "");
-    columnDefinition += (notNull ? " NOT NULL" : "");
+    columnDefinition += (Boolean.TRUE.equals(notNull) ? " NOT NULL" : "");
+    columnDefinition += customAttributes();
 
     if (foreign) {
       columnDefinition += " REFERENCES " + foreignTable.getValue() + " (" + foreignColumn.getValue() + ")";

@@ -44,4 +44,21 @@ public class ExtendedDateColumnAttribute extends ExtendedColumnAttribute {
   public void setPastOrPresent(Boolean pastOrPresent) {
     isPastOrPresent = pastOrPresent;
   }
+
+  @Override
+  protected String customAttributes() {
+    if (Boolean.TRUE.equals(isPast)) {
+      return " CHECK (IS PAST)";
+    }
+    if (Boolean.TRUE.equals(isPastOrPresent)) {
+      return " CHECK (IS PAST OR PRESENT)";
+    }
+    if (Boolean.TRUE.equals(isFuture)) {
+      return " CHECK (IS FUTURE)";
+    }
+    if (Boolean.TRUE.equals(isFutureOrPresent)) {
+      return " CHECK (IS FUTURE OR PRESENT)";
+    }
+    return super.customAttributes();
+  }
 }
