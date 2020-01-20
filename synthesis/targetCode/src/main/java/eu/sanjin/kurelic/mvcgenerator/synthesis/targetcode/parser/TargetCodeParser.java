@@ -20,7 +20,8 @@ public class TargetCodeParser {
     this.semanticAttributeTable = semanticAttributeTable;
   }
 
-  public void parse() {
+  public void parse(TargetSettings targetSettings) {
+    this.targetSettings = targetSettings;
     for(TableAttribute tableAttribute : semanticAttributeTable.getTables().values()) {
       // generate presentation layer
 
@@ -39,5 +40,7 @@ public class TargetCodeParser {
     throw new UnsupportedTargetFrameworkTargetCodeException(targetSettings.getTargetFramework());
   }
 
-
+  public String getStatus() {
+    return "";
+  }
 }

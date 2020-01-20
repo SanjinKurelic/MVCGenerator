@@ -9,8 +9,17 @@ public class TargetCodeSynthesis {
   private IntermediateCodeSynthesis intermediateCodeSynthesis;
   private TargetCodeParser targetCodeParser;
 
+  public TargetCodeSynthesis() {
+    intermediateCodeSynthesis = new IntermediateCodeSynthesis();
+  }
+
   public void parse(String code, TargetSettings targetSettings) throws Exception {
     intermediateCodeSynthesis.parse(code);
-    // TODO use settings
+    targetCodeParser = new TargetCodeParser(intermediateCodeSynthesis.getSemanticAttributeTable());
+    targetCodeParser.parse(targetSettings);
+  }
+
+  public String getStatus() {
+    return targetCodeParser.getStatus();
   }
 }
