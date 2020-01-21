@@ -80,10 +80,11 @@ public class MainView extends JFrame {
 
   private void generate() {
     String inputFilePath = inputSettingsPanel.getInputFilePath();
+    String projectName = outputSettingsPanel.getProjectName();
     String rootNamespace = outputSettingsPanel.getRootNamespace();
     String outputDirectoryPath = outputSettingsPanel.getOutputDirectory();
 
-    ArrayList<String> errors = ValidationUtil.validateInput(inputFilePath, rootNamespace, outputDirectoryPath);
+    ArrayList<String> errors = ValidationUtil.validateInput(inputFilePath, projectName, rootNamespace, outputDirectoryPath);
     if (errors.size() > 0) {
       showError(String.join("\n", errors));
       return;
@@ -99,6 +100,7 @@ public class MainView extends JFrame {
       return;
     }
     // Only Java/Spring is supported
+    settings.setProjectName(projectName);
     settings.setTargetFramework(TargetFramework.SPRING);
     settings.setRootNamespace(Objects.isNull(rootNamespace) ? "" : rootNamespace);
     settings.setOutputPath(outputDirectoryPath);

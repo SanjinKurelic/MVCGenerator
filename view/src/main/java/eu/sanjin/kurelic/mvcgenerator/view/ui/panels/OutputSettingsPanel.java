@@ -7,6 +7,7 @@ import eu.sanjin.kurelic.mvcgenerator.view.ui.components.TextField;
 public class OutputSettingsPanel extends SettingsPanel {
 
   private static final String PANEL_TITLE = "Output settings";
+  private static final String PROJECT_NAME_LABEL = "Project name";
   private static final String PROGRAMMING_LANGUAGE_LABEL = "Programming language";
   private static final String DEFAULT_PROGRAMMING_LANGUAGE = "Java";
   private static final String FRAMEWORK_LABEL = "Framework";
@@ -14,6 +15,7 @@ public class OutputSettingsPanel extends SettingsPanel {
   private static final String ROOT_NAMESPACE_LABEL = "Root namespace";
   private static final String OUTPUT_DIRECTORY_LABEL = "Output directory";
 
+  private TextField projectName;
   private TextField rootNamespace;
   private FilePicker filePicker;
 
@@ -23,6 +25,7 @@ public class OutputSettingsPanel extends SettingsPanel {
   }
 
   private void populateWindow() {
+    addRow(PROJECT_NAME_LABEL, projectName);
     addRow(PROGRAMMING_LANGUAGE_LABEL, new DisabledComboBox(DEFAULT_PROGRAMMING_LANGUAGE));
     addRow(FRAMEWORK_LABEL, new DisabledComboBox(DEFAULT_FRAMEWORK));
 
@@ -32,6 +35,10 @@ public class OutputSettingsPanel extends SettingsPanel {
     filePicker = new FilePicker();
     filePicker.setMode(FilePicker.OPEN_DIRECTORY);
     addRow(OUTPUT_DIRECTORY_LABEL, filePicker);
+  }
+
+  public String getProjectName() {
+    return projectName.getText();
   }
 
   public String getRootNamespace() {
