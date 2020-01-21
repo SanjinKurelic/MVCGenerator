@@ -22,6 +22,10 @@ public class TargetCodeParser {
 
   public void parse(TargetSettings targetSettings) {
     this.targetSettings = targetSettings;
+
+    // generate project structure
+
+
     for(TableAttribute tableAttribute : semanticAttributeTable.getTables().values()) {
       // generate presentation layer
 
@@ -31,13 +35,6 @@ public class TargetCodeParser {
 
       // generate dao layer
     }
-  }
-
-  private ControllerBlock getControllerBlock() throws TargetCodeException {
-    if (TargetFramework.SPRING.equals(targetSettings.getTargetFramework())) {
-      return new JavaSpringControllerBlock();
-    }
-    throw new UnsupportedTargetFrameworkTargetCodeException(targetSettings.getTargetFramework());
   }
 
   public String getStatus() {

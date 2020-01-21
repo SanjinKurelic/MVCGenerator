@@ -9,5 +9,4 @@ public abstract class ClassDefinition extends Definition {
   }
 
   public abstract String generateContent(String body);
-
 }
