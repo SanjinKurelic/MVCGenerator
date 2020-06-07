@@ -7,7 +7,7 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.parser.Intermed
 public class IntermediateCodeSynthesis {
 
   private IntermediateCodeParser intermediateCodeParser;
-  private SemanticAnalyzer semanticAnalyzer;
+  private final SemanticAnalyzer semanticAnalyzer;
 
   public IntermediateCodeSynthesis() {
     semanticAnalyzer = new SemanticAnalyzer();

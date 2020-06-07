@@ -2,8 +2,6 @@ package eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure;
 
 import eu.sanjin.kurelic.mvcgenerator.analysis.semantic.structure.attribute.ColumnAttribute;
 
-import java.util.Objects;
-
 public class ExtendedBooleanColumnAttribute extends ExtendedColumnAttribute{
 
   private Boolean assertTrue;

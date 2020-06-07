@@ -6,9 +6,9 @@ public class CharacterSupplier {
 
   private int currentIndex;
   private int beginIndex;
-  private int textLength;
+  private final int textLength;
   private int lineNumber;
-  private String text;
+  private final String text;
 
   public CharacterSupplier(String text) {
     this.text = text;

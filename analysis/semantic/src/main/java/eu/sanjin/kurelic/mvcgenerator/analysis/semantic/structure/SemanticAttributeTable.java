@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class SemanticAttributeTable {
 
-  private HashMap<String, TableAttribute> tableAttributes;
+  private final HashMap<String, TableAttribute> tableAttributes;
 
   public SemanticAttributeTable() {
     tableAttributes = new HashMap<>();

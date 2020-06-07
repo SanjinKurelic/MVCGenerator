@@ -23,8 +23,8 @@ public enum SpecialCharacterToken {
   OVERLAPS('∩', SpecialCharacterClass.COMPOUND), LIKE('⊆', SpecialCharacterClass.COMPOUND),
   NOT_LIKE('\\', SpecialCharacterClass.COMPOUND), CAST('→', SpecialCharacterClass.COMPOUND);
 
-  private char value;
-  private SpecialCharacterClass type;
+  private final char value;
+  private final SpecialCharacterClass type;
 
   SpecialCharacterToken(char value, SpecialCharacterClass type) {
     this.value = value;

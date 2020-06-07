@@ -19,7 +19,7 @@ public enum DataTypeToken {
   DATE(DataTypeClass.DATE_TIME), DATETIME(DataTypeClass.DATE_TIME), TIME(DataTypeClass.DATE_TIME),
   TIMESTAMP(DataTypeClass.DATE_TIME);
 
-  private DataTypeClass type;
+  private final DataTypeClass type;
 
   DataTypeToken(DataTypeClass type) {
     this.type = type;

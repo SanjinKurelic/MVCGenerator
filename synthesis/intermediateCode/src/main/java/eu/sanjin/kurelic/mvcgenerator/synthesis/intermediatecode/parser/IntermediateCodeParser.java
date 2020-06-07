@@ -21,7 +21,6 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.Inter
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.MinMaxIntermediateCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.exception.ValidationMismatchIntermediateCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedBooleanColumnAttribute;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedDateColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedIntegerColumnAttribute;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.intermediatecode.structure.ExtendedRealColumnAttribute;
@@ -40,7 +39,7 @@ public class IntermediateCodeParser {
   private static final String IN_FUTURE = "in future";
   private static final String IN_PAST = "in past";
 
-  private SemanticAttributeTable semanticAttributeTable;
+  private final SemanticAttributeTable semanticAttributeTable;
   private TableAttribute currentTable;
   private ColumnAttribute currentColumn;
   private boolean removeExpression;

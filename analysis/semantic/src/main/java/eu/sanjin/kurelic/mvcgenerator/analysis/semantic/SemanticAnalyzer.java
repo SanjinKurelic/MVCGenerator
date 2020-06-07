@@ -7,7 +7,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.SyntaxAnalyzer;
 public class SemanticAnalyzer {
 
   private SemanticParser semanticParser;
-  private SyntaxAnalyzer syntaxAnalyzer;
+  private final SyntaxAnalyzer syntaxAnalyzer;
 
   public SemanticAnalyzer() {
     syntaxAnalyzer = new SyntaxAnalyzer();

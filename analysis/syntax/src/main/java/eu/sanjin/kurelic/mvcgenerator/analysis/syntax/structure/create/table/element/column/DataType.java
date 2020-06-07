@@ -9,7 +9,7 @@ public class DataType {
   private static final String PRECISION_OR_LENGTH_TAG = "PrecisionOrLength";
   private static final String SCALE_TAG = "Scale";
 
-  private Token type;
+  private final Token type;
   private Token precisionOrLength;
   private Token scale;
 

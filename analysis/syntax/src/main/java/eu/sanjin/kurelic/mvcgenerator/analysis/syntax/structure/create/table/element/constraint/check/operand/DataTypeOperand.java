@@ -6,7 +6,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.utility.XmlTagBuilder;
 
 public class DataTypeOperand implements Operand {
 
-  private DataType dataType;
+  private final DataType dataType;
 
   public DataTypeOperand(DataType dataType) {
     this.dataType = dataType;

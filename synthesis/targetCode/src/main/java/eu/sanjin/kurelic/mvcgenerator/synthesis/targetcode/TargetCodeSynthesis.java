@@ -6,7 +6,7 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetSetti
 
 public class TargetCodeSynthesis {
 
-  private IntermediateCodeSynthesis intermediateCodeSynthesis;
+  private final IntermediateCodeSynthesis intermediateCodeSynthesis;
   private TargetCodeParser targetCodeParser;
 
   public TargetCodeSynthesis() {

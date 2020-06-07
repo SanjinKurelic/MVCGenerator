@@ -9,7 +9,7 @@ public class TableAttribute {
 
   private Token tableName;
   private CheckAttribute checkAttribute;
-  private HashMap<String, ColumnAttribute> columns;
+  private final HashMap<String, ColumnAttribute> columns;
 
   public TableAttribute() {
     columns = new HashMap<>();
@@ -63,9 +63,7 @@ public class TableAttribute {
     stringBuilder.append("= ").append(tableName.getValue()).append("\n");
     stringBuilder.append("=".repeat(80)).append("\n");
 
-    columns.forEach((columnName, column) -> {
-      stringBuilder.append(column.toString()).append("\n");
-    });
+    columns.forEach((columnName, column) -> stringBuilder.append(column.toString()).append("\n"));
 
     stringBuilder.append("=".repeat(80)).append("\n");
     stringBuilder.append(checkAttribute.toString());

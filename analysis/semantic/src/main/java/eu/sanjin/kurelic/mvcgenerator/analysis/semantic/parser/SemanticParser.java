@@ -57,7 +57,7 @@ import java.util.stream.Stream;
 
 public class SemanticParser {
 
-  private SyntaxTree syntaxTree;
+  private final SyntaxTree syntaxTree;
   private SemanticAttributeTable semanticAttributeTable;
   private TableAttribute currentTable;
   private ColumnAttribute currentColumn;

@@ -12,7 +12,7 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.util.CodeOutputWriter
 
 public class TargetCodeParser {
 
-  private SemanticAttributeTable semanticAttributeTable;
+  private final SemanticAttributeTable semanticAttributeTable;
   private TargetSettings targetSettings;
   private CodeOutputWriterUtil codeOutputWriterUtil;
 

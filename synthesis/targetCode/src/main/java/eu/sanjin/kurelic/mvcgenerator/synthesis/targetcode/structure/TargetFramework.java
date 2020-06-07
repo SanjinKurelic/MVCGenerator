@@ -7,7 +7,7 @@ public enum TargetFramework {
   LARAVEL(TargetProgrammingLanguage.PHP), SYMFONY(TargetProgrammingLanguage.PHP), PURE_PHP(TargetProgrammingLanguage.PHP),
   ASP(TargetProgrammingLanguage.C_SHARP), ASP_CORE(TargetProgrammingLanguage.C_SHARP);
 
-  private TargetProgrammingLanguage targetProgrammingLanguage;
+  private final TargetProgrammingLanguage targetProgrammingLanguage;
 
   TargetFramework(TargetProgrammingLanguage targetProgrammingLanguage) {
     this.targetProgrammingLanguage = targetProgrammingLanguage;

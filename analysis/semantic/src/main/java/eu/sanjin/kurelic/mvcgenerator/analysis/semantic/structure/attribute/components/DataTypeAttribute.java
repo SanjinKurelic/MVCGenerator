@@ -10,7 +10,7 @@ public enum DataTypeAttribute {
   NULL(0), STRING(1), BOOLEAN(2), INTEGER(3), REAL(4),
   DATE(5), DATETIME(7), TIME(6), TIMESTAMP(8), INTERVAL(9), ZONED_DATETIME(10);
 
-  private int order;
+  private final int order;
   DataTypeAttribute(int order) {
     this.order = order;
   }

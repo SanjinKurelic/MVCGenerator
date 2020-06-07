@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class LexicalParser {
 
-  private CharacterSupplier characterSupplier;
+  private final CharacterSupplier characterSupplier;
   private int lineNumber;
 
   public LexicalParser(CharacterSupplier characterSupplier) {

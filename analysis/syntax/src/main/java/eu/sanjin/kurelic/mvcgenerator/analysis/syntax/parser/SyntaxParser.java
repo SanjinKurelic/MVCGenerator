@@ -33,7 +33,7 @@ import java.util.Stack;
 
 public class SyntaxParser {
 
-  private TokenSupplier token;
+  private final TokenSupplier token;
   private SyntaxTree syntaxTree;
 
   public SyntaxParser(TokenSupplier token) {

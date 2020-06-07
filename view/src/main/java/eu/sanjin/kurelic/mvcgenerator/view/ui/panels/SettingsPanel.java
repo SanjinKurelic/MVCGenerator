@@ -19,7 +19,7 @@ class SettingsPanel extends JPanel {
   private static final int PANEL_PADDING_TOP_BOTTOM = 5;
   private static final int TITLE_FONT_SIZE = 12;
 
-  private GridBagConstraints gbc;
+  private final GridBagConstraints gbc;
   private int currentRow = 0;
 
   SettingsPanel(String panelTitle) {

@@ -8,7 +8,7 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.structure.SyntaxTree;
 public class SyntaxAnalyzer {
 
   private SyntaxParser syntaxParser;
-  private LexicalAnalyzer lexicalAnalyzer;
+  private final LexicalAnalyzer lexicalAnalyzer;
 
   public SyntaxAnalyzer() {
     lexicalAnalyzer = new LexicalAnalyzer();

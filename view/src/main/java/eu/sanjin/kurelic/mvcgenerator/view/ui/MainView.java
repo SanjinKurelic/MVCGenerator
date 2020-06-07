@@ -33,9 +33,9 @@ public class MainView extends JFrame {
   private static final String SUCCESS_POPUP_TITLE = "Success";
   private static final String SUCCESS_POPUP_MESSAGE = "Files are successfully created at location: %s";
 
-  private TargetCodeSynthesis targetCodeSynthesis;
-  private InputSettingsPanel inputSettingsPanel;
-  private OutputSettingsPanel outputSettingsPanel;
+  private final TargetCodeSynthesis targetCodeSynthesis;
+  private final InputSettingsPanel inputSettingsPanel;
+  private final OutputSettingsPanel outputSettingsPanel;
 
   public MainView() throws HeadlessException {
     super(APPLICATION_NAME);

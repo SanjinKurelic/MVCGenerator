@@ -8,9 +8,9 @@ import eu.sanjin.kurelic.mvcgenerator.analysis.syntax.exception.UnexpectedTokenS
 
 public class TokenSupplier {
 
-  private Tokens tokens;
+  private final Tokens tokens;
   private int index;
-  private int size;
+  private final int size;
 
   public TokenSupplier(Tokens tokens) {
     this.tokens = tokens;

@@ -3,8 +3,6 @@ package eu.sanjin.kurelic.mvcgenerator.view;
 import eu.sanjin.kurelic.mvcgenerator.view.ui.MainView;
 
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 public class Application {
 

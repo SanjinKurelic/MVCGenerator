@@ -9,7 +9,7 @@ public class InvalidIdentifierSyntaxException extends SyntaxException {
     INVALID_CHARACTER("Identifier must contain only alphanumeric characters and underscore or space characters"),
     INVALID_FIRST_CHARACTER("Identifier must start with alphabetic character");
 
-    private String message;
+    private final String message;
 
     ErrorType(String message) {
       this.message = message;

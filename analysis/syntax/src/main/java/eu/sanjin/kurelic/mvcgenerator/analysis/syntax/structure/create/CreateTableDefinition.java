@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 public class CreateTableDefinition implements Serializable, CreateDefinition {
 
-  private TableDefinition tableDefinition;
+  private final TableDefinition tableDefinition;
 
   public CreateTableDefinition(TableDefinition tableDefinition) {
     this.tableDefinition = tableDefinition;

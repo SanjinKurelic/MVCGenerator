@@ -23,8 +23,8 @@ public class FilePicker extends JPanel {
   public static final int OPEN_DIRECTORY = 2;
 
   private int mode;
-  private TextField textField;
-  private JFileChooser fileChooser;
+  private final TextField textField;
+  private final JFileChooser fileChooser;
 
   public FilePicker() {
     fileChooser = new JFileChooser();
