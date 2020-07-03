@@ -1,0 +1,10 @@
+package {$rootNamespace}.repository;
+
+import {$rootNamespace}.entity.{$entityName};
+import org.springframework.data.repository.CrudRepository;
+{% if ($idClassPackage) %}
+import {$idClassPackage};
+{% endif %}
+
+public interface {$entityName}Repository extends CrudRepository<{$entityName}, {$idClass}> {
+}
