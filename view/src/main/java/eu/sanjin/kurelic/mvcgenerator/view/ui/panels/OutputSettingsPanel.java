@@ -25,6 +25,7 @@ public class OutputSettingsPanel extends SettingsPanel {
   }
 
   private void populateWindow() {
+    projectName = new TextField();
     addRow(PROJECT_NAME_LABEL, projectName);
     addRow(PROGRAMMING_LANGUAGE_LABEL, new DisabledComboBox(DEFAULT_PROGRAMMING_LANGUAGE));
     addRow(FRAMEWORK_LABEL, new DisabledComboBox(DEFAULT_FRAMEWORK));

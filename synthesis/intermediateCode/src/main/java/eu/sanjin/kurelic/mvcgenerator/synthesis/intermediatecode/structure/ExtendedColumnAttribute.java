@@ -9,13 +9,13 @@ import java.util.logging.Logger;
 
 public abstract class ExtendedColumnAttribute extends ColumnAttribute {
 
-  private static final Logger LOG = Logger.getLogger(ExtendedColumnAttribute.class.getName());
+  private static final Logger log = Logger.getLogger(ExtendedColumnAttribute.class.getName());
 
   public ExtendedColumnAttribute(ColumnAttribute columnAttribute) {
     try {
       BeanUtils.copyProperties(this, columnAttribute);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.log(Level.SEVERE, e.getMessage(), e);
+      log.log(Level.SEVERE, e.getMessage(), e);
     }
   }
 }
