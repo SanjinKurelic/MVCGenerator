@@ -8,6 +8,8 @@ public abstract class Converter {
 
   public abstract TypeDefinition convertSqlTypeToNative(DataTypeAttribute dataTypeAttribute);
 
+  public abstract String initializeSqlDataInNativeVariable(DataTypeAttribute dataTypeAttribute, String value);
+
   public abstract String convertSqlTableNameToNativeClassName(Token tableName);
 
   public abstract String convertSqlTableColumnToNativeAttributeName(String columnName);

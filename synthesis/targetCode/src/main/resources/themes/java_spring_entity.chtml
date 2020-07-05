@@ -5,51 +5,45 @@ import {$rootNamespace}.entity.{$entityName}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
 import com.fasterxml.jackson.annotation.JsonInclude;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import javax.validation.constraints.*;
-{% if ($idClass == "Integer") %}
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import java.util.StringJoiner;
 {% endif %}
-{% if ($idComposite) %}
-import javax.persistence.EmbeddedId;
+
+{% if ($compositeEntity) %}
+@Embeddable
 {% else %}
-import javax.persistence.Id
-{% endif %}
-
 @Entity
+@Table(name = "{$entityRealName}")
+{% endif %}
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class {$entityName} {
+public class {$entityName}{% if ($compositeEntity) %}Id{% endif %} {
 
-  {% if ($idComposite) %}
-  @EmbeddedId
-  {% else %}
-  @Id
-  {% endif %}
-  {% if ($idClass == "Integer") %}
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  {% endif %}
-  private {$idClass} id; //TODO this is not name of id
-
-  // TODO -- add attributes & annotations
   {% loop $attributes as $attribute %}
-  {% if ($attribute.primaryKey) %}
-
-  {% elseif () %}
-
-  {% endif %}
-  private {$attribute.type} {$attribute.name};
+  {% include java_spring_component_annotation %}
+  @{% if ($attribute.model.isForeign) %}Join{% endif %}Column(name = "{$attribute.model.columnName.value}")
+  private {$attribute.type} {$attribute.nameLowercaseFirst}{% if ($attribute.value) %} = {$attribute.value}{% endif %};
   {% onEmpty %}
   {% endloop }
 
-  {% loop $attributes as $name:$type %} // TODO as class
-  public {$type} get{$name}() {
-    return {$name}; //TODO this is lc
+  {% loop $attributes as $attribute %}
+  public {$attribute.type} get{$attribute.name}() {
+    return {$attribute.nameLowercaseFirst};
   }
 
-  public void set{$name}({$type} {$name}) {
-    this.{$name} = {$name};
+  public void set{$attribute.name}({$attribute.type} {$attribute.nameLowercaseFirst}) {
+    this.{$attribute.nameLowercaseFirst} = {$attribute.nameLowercaseFirst};
   }
   {% onEmpty %}
   {% endloop %}
+
+  @Override
+  public String toString() {
+    StringJoiner stringJoiner = new StringJoiner(", ");
+    {% loop $attributes as $attribute %}
+    stringJoiner.add("{$attribute.name}=" + {$attribute.nameLowercaseFirst});
+    {% onEmpty %}
+    {% endloop %}
+    return "(" + stringJoiner.toString() + ")";
+  }
 }

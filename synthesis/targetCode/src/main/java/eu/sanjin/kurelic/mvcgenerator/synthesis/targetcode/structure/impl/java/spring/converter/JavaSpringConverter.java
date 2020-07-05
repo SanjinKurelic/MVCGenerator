@@ -36,6 +36,33 @@ public class JavaSpringConverter extends Converter {
   }
 
   @Override
+  public String initializeSqlDataInNativeVariable(DataTypeAttribute dataTypeAttribute, String value) {
+    switch (dataTypeAttribute) {
+      case STRING:
+        return '"' + value + '"';
+      case BOOLEAN:
+        return (value.equals("true") || value.equals("1")) ? "true" : "false";
+      case INTEGER:
+      case REAL:
+        return value;
+      case DATE:
+        return String.format("LocalDate.parse(\"%s\")", value);
+      case DATETIME:
+        return String.format("LocalDateTime.parse(\"%s\")", value.replace(' ', 'T'));
+      case TIME:
+        return String.format("LocalTime.parse(\"%s\")", value);
+      case TIMESTAMP:
+        return ""; // TODO
+      case INTERVAL:
+        return ""; // TODO
+      case ZONED_DATETIME:
+        return String.format("ZonedDateTime.parse(\"%s\")", value.replace(' ', 'T'));
+      default:
+        return "null";
+    }
+  }
+
+  @Override
   public String convertSqlTableNameToNativeClassName(Token tableName) {
     return convertToCamelCase(tableName.getValue());
   }

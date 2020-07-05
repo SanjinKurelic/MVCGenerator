@@ -10,8 +10,10 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetSetti
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.converter.Converter;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.models.TemplateAttributeNames;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.writer.ProjectWriter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.writer.ValidationWriter;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.impl.java.spring.converter.JavaSpringConverter;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.impl.java.spring.writer.JavaSpringProjectWriter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.impl.java.spring.writer.JavaSpringValidationWriter;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.util.CodeOutputWriterUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,6 +25,7 @@ public class TargetCodeSupplier {
 
   private final TargetSettings targetSettings;
   private final ProjectWriter projectWriter;
+  private final ValidationWriter validationWriter;
   private final Converter converter;
   private final String templatePrefix;
 
@@ -34,6 +37,7 @@ public class TargetCodeSupplier {
 
     if (TargetFramework.SPRING.equals(targetSettings.getTargetFramework())) {
       projectWriter = new JavaSpringProjectWriter();
+      validationWriter = new JavaSpringValidationWriter();
       converter = new JavaSpringConverter();
       templatePrefix = JAVA_SPRING_TEMPLATE;
     } else {
@@ -53,6 +57,10 @@ public class TargetCodeSupplier {
 
   public ProjectWriter getProjectWriter() {
     return projectWriter;
+  }
+
+  public ValidationWriter getValidationWriter() {
+    return validationWriter;
   }
 
   public Converter getConverter() {

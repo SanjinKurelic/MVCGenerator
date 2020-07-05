@@ -1,0 +1,42 @@
+{% if ($attribute.model.primary) %}
+{% if ($idComposite) %}
+@EmbeddedId
+{% elseif (!$compositeEntity) %}
+@Id
+{% endif %}
+{% if (!$compositeEntity) %}
+{% if ($idClass == "Integer") %}
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+{% endif %}
+{% elseif ($attribute.type == "Integer") %}
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+{% endif %}
+{% elseif ($attribute.model.notNull) %}
+@NotNull
+{% elseif ($attribute.model.length) %}
+@Size(max = {$attribute.model.length})
+{% elseif ($attribute.model.assertTrue) %}
+@AssertTrue
+{% elseif ($attribute.model.assertFalse) %}
+@AssertFalse
+{% elseif ($attribute.model.isFuture) %}
+@Future
+{% elseif ($attribute.model.isFutureOrPresent) %}
+@FutureOrPresent
+{% elseif ($attribute.model.isPast) %}
+@Past
+{% elseif ($attribute.model.isPastOrPresent) %}
+@PastOrPresent
+{% elseif ($attribute.model.max) %}
+@Max({$attribute.model.max})
+{% elseif ($attribute.model.min) %}
+@Min({$attribute.model.min})
+{% elseif ($attribute.model.isForeign) %}
+{% if ($attribute.model.unique) %}
+@OneToOne({% include java_spring_component_extra_import %})
+{% elseif ($attribute.model.primary) %}
+@OneToOne({% include java_spring_component_extra_import %})
+{% else %}
+@ManyToOne({% include java_spring_component_extra_import %})
+{% endif %}
+{% endif %}
