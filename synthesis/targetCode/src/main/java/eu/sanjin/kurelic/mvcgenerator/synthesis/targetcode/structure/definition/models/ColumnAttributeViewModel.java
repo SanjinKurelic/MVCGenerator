@@ -63,7 +63,7 @@ public class ColumnAttributeViewModel {
     this.foreignColumn = foreignColumn;
   }
 
-  public boolean getCascadeDelete() {
+  public boolean isCascadeDelete() {
     return cascadeDelete;
   }
 
@@ -71,7 +71,7 @@ public class ColumnAttributeViewModel {
     this.cascadeDelete = cascadeDelete;
   }
 
-  public boolean getCascadeUpdate() {
+  public boolean isCascadeUpdate() {
     return cascadeUpdate;
   }
 

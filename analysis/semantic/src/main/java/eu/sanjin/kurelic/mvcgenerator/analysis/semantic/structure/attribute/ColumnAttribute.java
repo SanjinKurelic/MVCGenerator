@@ -40,6 +40,8 @@ public class ColumnAttribute {
     this.dataType = dataType;
   }
 
+  // Used in template engine
+  @SuppressWarnings("unused")
   public Integer getLength() {
     return length;
   }
@@ -72,6 +74,8 @@ public class ColumnAttribute {
     this.primary = primary;
   }
 
+  // Used in template engine
+  @SuppressWarnings("unused")
   public boolean isUnique() {
     return unique;
   }
@@ -80,7 +84,12 @@ public class ColumnAttribute {
     this.unique = unique;
   }
 
-  public Boolean isNotNull() {
+  // Used in template engine
+  public boolean isNotNull() {
+    return Boolean.TRUE.equals(notNull);
+  }
+
+  public Boolean getNotNull() {
     return notNull;
   }
 

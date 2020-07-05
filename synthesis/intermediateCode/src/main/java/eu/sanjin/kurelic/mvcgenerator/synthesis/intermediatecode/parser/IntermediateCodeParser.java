@@ -285,7 +285,7 @@ public class IntermediateCodeParser {
       columnAttribute.setAssertFalse(true);
     } else { // Unknown or null
       // If column is not null - throw validation mismatch
-      if (!Objects.isNull(columnAttribute.isNotNull()) && columnAttribute.isNotNull()) {
+      if (!Objects.isNull(columnAttribute.getNotNull()) && columnAttribute.isNotNull()) {
         throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
       }
       columnAttribute.setNotNull(false);
@@ -476,12 +476,12 @@ public class IntermediateCodeParser {
       return false;
     }
     if (KeywordToken.NULL.equals(value)) {
-      if (Boolean.TRUE.equals(currentColumn.isNotNull())) {
+      if (Boolean.TRUE.equals(currentColumn.getNotNull())) {
         throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
       }
       currentColumn.setNotNull(false);
     } else {
-      if (Boolean.FALSE.equals(currentColumn.isNotNull())) {
+      if (Boolean.FALSE.equals(currentColumn.getNotNull())) {
         throw new ValidationMismatchIntermediateCodeException(currentColumn, KeywordToken.NULL.toString(), NOT_NULL);
       }
       currentColumn.setNotNull(true);
