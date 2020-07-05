@@ -1,4 +1,4 @@
-package {$rootNamespace}.config;
+package {$root_namespace}.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class {$projectName}GlobalExceptionHandler {
+public class {$project_name}GlobalExceptionHandler {
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(MethodArgumentNotValidException.class)

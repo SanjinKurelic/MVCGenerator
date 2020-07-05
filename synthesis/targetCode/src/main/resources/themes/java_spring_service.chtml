@@ -1,9 +1,9 @@
-package {$rootNamespace}.service;
+package {$root_namespace}.service;
 
-import {$rootNamespace}.entity.{$entityName};
-import {$rootNamespace}.repository.{$entityName}Repository;
-{% if ($idComposite == true) %}
-import {$rootNamespace}.entity.{$entityName}Id;
+import {$root_namespace}.entity.{$entity_name};
+import {$root_namespace}.repository.{$entity_name}Repository;
+{% if ($id_composite == true) %}
+import {$root_namespace}.entity.{$entity_name}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,39 +13,39 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class {$entityName}Service {
+public class {$entity_name}Service {
 
   @Autowired
-  private {$entityName}Repository {$entityNameLowercaseFirst}Repository;
+  private {$entity_name}Repository {$entity_name_lowercase_first}Repository;
 
-  public List<{$entityName}> getAll() {
-    return (List<{$entityName}>) {$entityNameLowercaseFirst}Repository.findAll();
+  public List<{$entity_name}> getAll() {
+    return (List<{$entity_name}>) {$entity_name_lowercase_first}Repository.findAll();
   }
 
-  public Optional<{$entityName}> get({$idClass} id) {
-    return {$entityNameLowercaseFirst}Repository.findById(id);
+  public Optional<{$entity_name}> get({$id_class} id) {
+    return {$entity_name_lowercase_first}Repository.findById(id);
   }
 
-  public void add({$entityName} {$entityNameLowercaseFirst}) throws Exception {
-    validate({$entityNameLowercaseFirst});
-    {$entityNameLowercaseFirst}Repository.save({$entityNameLowercaseFirst});
+  public void add({$entity_name} {$entity_name_lowercase_first}) throws Exception {
+    validate({$entity_name_lowercase_first});
+    {$entity_name_lowercase_first}Repository.save({$entity_name_lowercase_first});
   }
 
-  public void update({$entityName} {$entityNameLowercaseFirst}) throws Exception {
-    validate({$entityNameLowercaseFirst});
-    {$entityNameLowercaseFirst}Repository.findById({$entityNameLowercaseFirst}.get{$idName}()).orElseThrow(() -> new Exception("{$entityName} not found by id: " + {$entityNameLowercaseFirst}.get{$idName}()));
-    {$entityNameLowercaseFirst}Repository.save({$entityNameLowercaseFirst});
+  public void update({$entity_name} {$entity_name_lowercase_first}) throws Exception {
+    validate({$entity_name_lowercase_first});
+    {$entity_name_lowercase_first}Repository.findById({$entity_name_lowercase_first}.get{$id_name}()).orElseThrow(() -> new Exception("{$entity_name} not found by id: " + {$entity_name_lowercase_first}.get{$id_name}()));
+    {$entity_name_lowercase_first}Repository.save({$entity_name_lowercase_first});
   }
 
-  public void delete({$idClass} id) throws Exception {
-    {$entityNameLowercaseFirst}Repository.findById(id).orElseThrow(() -> new Exception("{$entityName} not found by id: " + id));
-    {$entityNameLowercaseFirst}Repository.deleteById(id);
+  public void delete({$id_class} id) throws Exception {
+    {$entity_name_lowercase_first}Repository.findById(id).orElseThrow(() -> new Exception("{$entity_name} not found by id: " + id));
+    {$entity_name_lowercase_first}Repository.deleteById(id);
   }
 
-  private void validate({$entityName} {$entityNameLowercaseFirst}) throws Exception {
+  private void validate({$entity_name} {$entity_name_lowercase_first}) throws Exception {
     // TODO validation
-    /*if (Objects.isNull({$entityNameLowercaseFirst}.getId())) {
-      throw new Exception("{$entityName} id can not be empty");
+    /*if (Objects.isNull({$entity_name_lowercase_first}.getId())) {
+      throw new Exception("{$entity_name} id can not be empty");
     }*/
   }
 }

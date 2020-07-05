@@ -1,1 +1,1 @@
-{% loop in $idParameters as $name:$type %}/{{$name}}{% onEmpty %}{% endloop %}
+{% loop in $id_parameters as $name:$type %}/{{$name}}{% onEmpty %}{% endloop %}

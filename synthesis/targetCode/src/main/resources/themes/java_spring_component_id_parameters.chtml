@@ -1,1 +1,1 @@
-{% loop in $idParameters as $name:$type divider=', ' %}{$name}{% onEmpty %}{% endloop %}
+{% loop in $id_parameters as $name:$type divider=', ' %}{$name}{% onEmpty %}{% endloop %}

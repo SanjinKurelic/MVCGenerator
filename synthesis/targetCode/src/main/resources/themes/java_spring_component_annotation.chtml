@@ -1,11 +1,11 @@
 {% if ($attribute.model.primary == true) %}
-{% if ($idComposite == true) %}
+{% if ($id_composite == true) %}
 @EmbeddedId
-{% elseif ($compositeEntity == false) %}
+{% elseif ($composite_entity == false) %}
 @Id
 {% endif %}
-{% if ($compositeEntity == false) %}
-{% if ($idClass == "Integer") %}
+{% if ($composite_entity == false) %}
+{% if ($id_class == "Integer") %}
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 {% endif %}
 {% elseif ($attribute.type == "Integer") %}

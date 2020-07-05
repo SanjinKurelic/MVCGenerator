@@ -1,4 +1,4 @@
-{% loop in $extraImports as $import %}
+{% loop in $extra_imports as $import %}
 import {$import};
 {% onEmpty %}
 {% endloop %}

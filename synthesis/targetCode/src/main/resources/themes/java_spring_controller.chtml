@@ -1,9 +1,9 @@
-package {$rootNamespace}.controller;
+package {$root_namespace}.controller;
 
-import {$rootNamespace}.entity.{$entityName};
-import {$rootNamespace}.service.{$entityName}Service;
-{% if ($idComposite == true) %}
-import {$rootNamespace}.entity.{$entityName}Id;
+import {$root_namespace}.entity.{$entity_name};
+import {$root_namespace}.service.{$entity_name}Service;
+{% if ($id_composite == true) %}
+import {$root_namespace}.entity.{$entity_name}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,44 +21,44 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/{$entityNameLowercaseFirst}")
-public class {$entityName}Controller {
+@RequestMapping("/api/{$entity_name_lowercase_first}")
+public class {$entity_name}Controller {
 
   @Autowired
-  private {$entityName}Service {$entityNameLowercaseFirst}Service;
+  private {$entity_name}Service {$entity_name_lowercase_first}Service;
 
   @GetMapping("/all")
-  public List<{$entityName}> getAll() {
-    return {$entityNameLowercaseFirst}Service.getAll();
+  public List<{$entity_name}> getAll() {
+    return {$entity_name_lowercase_first}Service.getAll();
   }
 
   @GetMapping("{% include java_spring_component_id_parameters_url %}")
-  public {$entityName} get({% include java_spring_component_id_parameters_function %}) {
-    {% if ($idComposite == true) %}
-    return {$entityNameLowercaseFirst}Service.get(new {$entityName}Id({% include java_spring_component_id_parameters %})).orElse(null);
+  public {$entity_name} get({% include java_spring_component_id_parameters_function %}) {
+    {% if ($id_composite == true) %}
+    return {$entity_name_lowercase_first}Service.get(new {$entity_name}Id({% include java_spring_component_id_parameters %})).orElse(null);
     {% else %}
-    return {$entityNameLowercaseFirst}Service.get({% include java_spring_component_id_parameters %}).orElse(null);
+    return {$entity_name_lowercase_first}Service.get({% include java_spring_component_id_parameters %}).orElse(null);
     {% endif %}
   }
 
   @PostMapping
-  public Map<String, Object> add(@Valid @RequestBody {$entityName} {$entityNameLowercaseFirst}) throws Exception {
-    {$entityNameLowercaseFirst}Service.add({$entityNameLowercaseFirst});
+  public Map<String, Object> add(@Valid @RequestBody {$entity_name} {$entity_name_lowercase_first}) throws Exception {
+    {$entity_name_lowercase_first}Service.add({$entity_name_lowercase_first});
     return Map.of("success", true);
   }
 
   @PutMapping
-  public Map<String, Object> update(@Valid @RequestBody {$entityName} {$entityNameLowercaseFirst}) throws Exception {
-    {$entityNameLowercaseFirst}Service.update({$entityNameLowercaseFirst});
+  public Map<String, Object> update(@Valid @RequestBody {$entity_name} {$entity_name_lowercase_first}) throws Exception {
+    {$entity_name_lowercase_first}Service.update({$entity_name_lowercase_first});
     return Map.of("success", true);
   }
 
   @DeleteMapping("{% include java_spring_component_id_parameters_url %}")
   public Map<String, Object> remove({% include java_spring_component_id_parameters_function %}) throws Exception {
-    {% if ($idComposite == true) %}
-    {$entityNameLowercaseFirst}Service.delete(new {$entityName}Id({% include java_spring_component_id_parameters %}));
+    {% if ($id_composite == true) %}
+    {$entity_name_lowercase_first}Service.delete(new {$entity_name}Id({% include java_spring_component_id_parameters %}));
     {% else %}
-    {$entityNameLowercaseFirst}Service.delete({% include java_spring_component_id_parameters %});
+    {$entity_name_lowercase_first}Service.delete({% include java_spring_component_id_parameters %});
     {% endif %}
     return Map.of("success", true);
   }

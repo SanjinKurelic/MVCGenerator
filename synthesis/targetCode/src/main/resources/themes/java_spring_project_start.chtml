@@ -1,12 +1,12 @@
-package {$rootNamespace};
+package {$root_namespace};
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class {$projectName}Application {
+public class {$project_ame}Application {
 
   public static void main(String[] args) {
-    SpringApplication.run({$projectName}Application.class, args);
+    SpringApplication.run({$project_ame}Application.class, args);
   }
 }

@@ -1,7 +1,7 @@
-package {$rootNamespace}.entity;
+package {$root_namespace}.entity;
 
-{% if ($idComposite == true) %}
-import {$rootNamespace}.entity.{$entityName}Id;
+{% if ($id_composite == true) %}
+import {$root_namespace}.entity.{$entity_name}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,23 +9,23 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.util.StringJoiner;
 
-{% if ($compositeEntity == true) %}
+{% if ($composite_entity == true) %}
 @Embeddable
 {% else %}
 @Entity
-@Table(name = "{$entityRealName}")
+@Table(name = "{$entity_real_name}")
 {% endif %}
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class {$entityName}{% if ($compositeEntity == true) %}Id{% endif %} {
+public class {$entity_name}{% if ($composite_entity == true) %}Id{% endif %} {
 
-  {% loop in $columnAttributes as $attribute %}
+  {% loop in $column_attributes as $attribute %}
   {% include java_spring_component_annotation %}
   @{% if ($attribute.model.is_foreign == true) %}Join{% endif %}Column(name = "{$attribute.model.column_name.value}")
   private {$attribute.type} {$attribute.name_lowercase_first}{% if ($attribute.value) %} = {$attribute.value}{% endif %};
   {% onEmpty %}
   {% endloop }
 
-  {% loop in $columnAttributes as $attribute %}
+  {% loop in $column_attributes as $attribute %}
   public {$attribute.type} get{$attribute.name}() {
     return {$attribute.name_lowercase_first};
   }
@@ -39,7 +39,7 @@ public class {$entityName}{% if ($compositeEntity == true) %}Id{% endif %} {
   @Override
   public String toString() {
     StringJoiner stringJoiner = new StringJoiner(", ");
-    {% loop in $columnAttributes as $attribute %}
+    {% loop in $column_attributes as $attribute %}
     stringJoiner.add("{$attribute.name}=" + {$attribute.name_lowercase_first});
     {% onEmpty %}
     {% endloop %}
