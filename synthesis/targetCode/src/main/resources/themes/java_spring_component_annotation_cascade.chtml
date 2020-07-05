@@ -1,1 +1,1 @@
-cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH{% if ($attribute.cascadeUpdate) %}, CascadeType.PERSIST{% endif %}{% if ($attribute.cascadeDelete) %}, CascadeType.REMOVE{% endif %}}
+cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH{% if ($attribute.cascadeUpdate == true) %}, CascadeType.PERSIST{% endif %}{% if ($attribute.cascadeDelete == true) %}, CascadeType.REMOVE{% endif %}}

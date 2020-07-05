@@ -9,5 +9,4 @@ class {$projectName}ApplicationTests {
   @Test
   void contextLoads() {
   }
-
 }

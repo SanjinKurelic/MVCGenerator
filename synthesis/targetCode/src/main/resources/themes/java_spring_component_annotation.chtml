@@ -1,40 +1,40 @@
-{% if ($attribute.model.primary) %}
-{% if ($idComposite) %}
+{% if ($attribute.model.primary == true) %}
+{% if ($idComposite == true) %}
 @EmbeddedId
-{% elseif (!$compositeEntity) %}
+{% elseif ($compositeEntity == false) %}
 @Id
 {% endif %}
-{% if (!$compositeEntity) %}
+{% if ($compositeEntity == false) %}
 {% if ($idClass == "Integer") %}
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 {% endif %}
 {% elseif ($attribute.type == "Integer") %}
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 {% endif %}
-{% elseif ($attribute.model.notNull) %}
+{% elseif ($attribute.model.not_null == true) %}
 @NotNull
 {% elseif ($attribute.model.length) %}
 @Size(max = {$attribute.model.length})
-{% elseif ($attribute.model.assertTrue) %}
+{% elseif ($attribute.model.assert_true == true) %}
 @AssertTrue
-{% elseif ($attribute.model.assertFalse) %}
+{% elseif ($attribute.model.assert_false == true) %}
 @AssertFalse
-{% elseif ($attribute.model.isFuture) %}
+{% elseif ($attribute.model.is_future == true) %}
 @Future
-{% elseif ($attribute.model.isFutureOrPresent) %}
+{% elseif ($attribute.model.is_future_or_present == true) %}
 @FutureOrPresent
-{% elseif ($attribute.model.isPast) %}
+{% elseif ($attribute.model.is_past == true) %}
 @Past
-{% elseif ($attribute.model.isPastOrPresent) %}
+{% elseif ($attribute.model.is_past_or_present == true) %}
 @PastOrPresent
 {% elseif ($attribute.model.max) %}
 @Max({$attribute.model.max})
 {% elseif ($attribute.model.min) %}
 @Min({$attribute.model.min})
-{% elseif ($attribute.model.isForeign) %}
-{% if ($attribute.model.unique) %}
+{% elseif ($attribute.model.is_foreign == true) %}
+{% if ($attribute.model.unique == true) %}
 @OneToOne({% include java_spring_component_extra_import %})
-{% elseif ($attribute.model.primary) %}
+{% elseif ($attribute.model.primary == true) %}
 @OneToOne({% include java_spring_component_extra_import %})
 {% else %}
 @ManyToOne({% include java_spring_component_extra_import %})

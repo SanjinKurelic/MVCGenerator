@@ -1,6 +1,6 @@
 package {$rootNamespace}.entity;
 
-{% if ($idComposite) %}
+{% if ($idComposite == true) %}
 import {$rootNamespace}.entity.{$entityName}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
@@ -8,31 +8,30 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.util.StringJoiner;
-{% endif %}
 
-{% if ($compositeEntity) %}
+{% if ($compositeEntity == true) %}
 @Embeddable
 {% else %}
 @Entity
 @Table(name = "{$entityRealName}")
 {% endif %}
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class {$entityName}{% if ($compositeEntity) %}Id{% endif %} {
+public class {$entityName}{% if ($compositeEntity == true) %}Id{% endif %} {
 
-  {% loop $attributes as $attribute %}
+  {% loop in $columnAttributes as $attribute %}
   {% include java_spring_component_annotation %}
-  @{% if ($attribute.model.isForeign) %}Join{% endif %}Column(name = "{$attribute.model.columnName.value}")
-  private {$attribute.type} {$attribute.nameLowercaseFirst}{% if ($attribute.value) %} = {$attribute.value}{% endif %};
+  @{% if ($attribute.model.is_foreign == true) %}Join{% endif %}Column(name = "{$attribute.model.column_name.value}")
+  private {$attribute.type} {$attribute.name_lowercase_first}{% if ($attribute.value) %} = {$attribute.value}{% endif %};
   {% onEmpty %}
   {% endloop }
 
-  {% loop $attributes as $attribute %}
+  {% loop in $columnAttributes as $attribute %}
   public {$attribute.type} get{$attribute.name}() {
-    return {$attribute.nameLowercaseFirst};
+    return {$attribute.name_lowercase_first};
   }
 
-  public void set{$attribute.name}({$attribute.type} {$attribute.nameLowercaseFirst}) {
-    this.{$attribute.nameLowercaseFirst} = {$attribute.nameLowercaseFirst};
+  public void set{$attribute.name}({$attribute.type} {$attribute.name_lowercase_first}) {
+    this.{$attribute.name_lowercase_first} = {$attribute.name_lowercase_first};
   }
   {% onEmpty %}
   {% endloop %}
@@ -40,8 +39,8 @@ public class {$entityName}{% if ($compositeEntity) %}Id{% endif %} {
   @Override
   public String toString() {
     StringJoiner stringJoiner = new StringJoiner(", ");
-    {% loop $attributes as $attribute %}
-    stringJoiner.add("{$attribute.name}=" + {$attribute.nameLowercaseFirst});
+    {% loop in $columnAttributes as $attribute %}
+    stringJoiner.add("{$attribute.name}=" + {$attribute.name_lowercase_first});
     {% onEmpty %}
     {% endloop %}
     return "(" + stringJoiner.toString() + ")";

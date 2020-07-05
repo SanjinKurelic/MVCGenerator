@@ -71,7 +71,7 @@ public class TargetCodeParser {
       var dataType = targetCodeSupplier.getConverter().convertSqlTypeToNative(column.getDataType());
 
       idParameters.put(
-        targetCodeSupplier.getConverter().convertSqlTableColumnToNativeAttributeName(name),
+        StringUtils.uncapitalize(targetCodeSupplier.getConverter().convertSqlTableColumnToNativeAttributeName(name)),
         dataType.getName()
       );
 
@@ -90,6 +90,7 @@ public class TargetCodeParser {
 
     // Define id class and import statement
     TypeDefinition idDefinition = new TypeDefinition();
+    idDefinition.setVariableName(StringUtils.capitalize(idParameters.keySet().toArray()[0].toString()));
     if (idParameters.size() > 1) {
       // Composite
       idDefinition.setName(String.format("%sId", targetCodeSupplier.getConverter().convertSqlTableColumnToNativeAttributeName(tableAttribute.getTableName())));
@@ -118,6 +119,7 @@ public class TargetCodeParser {
     // Generate template
     Chunk template = targetCodeSupplier.getTemplate(targetCodeType);
     template.set(TemplateAttributeNames.ID_CLASS, idDefinition.getName());
+    template.set(TemplateAttributeNames.ID_NAME, idDefinition.getVariableName());
     template.set(TemplateAttributeNames.EXTRA_IMPORTS, extraParams);
     template.set(TemplateAttributeNames.VALIDATION_RULES, validations);
 
@@ -204,7 +206,7 @@ public class TargetCodeParser {
   private String getFileName(TargetCodeType targetCodeType, TableAttribute tableAttribute) {
     return String.format("%s%s",
       targetCodeSupplier.getConverter().convertSqlTableColumnToNativeAttributeName(tableAttribute.getTableName()),
-      StringUtils.capitalize(targetCodeType.name().toLowerCase())
+      (TargetCodeType.ENTITY.equals(targetCodeType)) ? "" : StringUtils.capitalize(targetCodeType.name().toLowerCase())
     );
   }
 }

@@ -45,7 +45,7 @@ public class TargetCodeSupplier {
     }
   }
 
-  public void setCommonAttributes(Token tableName, Boolean isIdComposite) {
+  public void setCommonAttributes(Token tableName, boolean isIdComposite) {
     String entityName = getConverter().convertSqlTableNameToNativeClassName(tableName);
     commonAttributes = Map.of(
       TemplateAttributeNames.ROOT_NAMESPACE, targetSettings.getRootNamespace(),

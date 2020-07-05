@@ -4,6 +4,7 @@ public class TypeDefinition {
 
   private String name;
   private String namespace;
+  private String variableName;
 
   public TypeDefinition() {
   }
@@ -31,5 +32,13 @@ public class TypeDefinition {
 
   public void setNamespace(String namespace) {
     this.namespace = namespace;
+  }
+
+  public String getVariableName() {
+    return variableName;
+  }
+
+  public void setVariableName(String variableName) {
+    this.variableName = variableName;
   }
 }

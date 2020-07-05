@@ -11,8 +11,8 @@ public class ColumnAttributeViewModel {
   private String value;
   private String foreignTable;
   private String foreignColumn;
-  private Boolean cascadeDelete;
-  private Boolean cascadeUpdate;
+  private boolean cascadeDelete;
+  private boolean cascadeUpdate;
   private ColumnAttribute model;
 
   public String getName() {
@@ -63,19 +63,19 @@ public class ColumnAttributeViewModel {
     this.foreignColumn = foreignColumn;
   }
 
-  public Boolean getCascadeDelete() {
+  public boolean getCascadeDelete() {
     return cascadeDelete;
   }
 
-  public void setCascadeDelete(Boolean cascadeDelete) {
+  public void setCascadeDelete(boolean cascadeDelete) {
     this.cascadeDelete = cascadeDelete;
   }
 
-  public Boolean getCascadeUpdate() {
+  public boolean getCascadeUpdate() {
     return cascadeUpdate;
   }
 
-  public void setCascadeUpdate(Boolean cascadeUpdate) {
+  public void setCascadeUpdate(boolean cascadeUpdate) {
     this.cascadeUpdate = cascadeUpdate;
   }
 

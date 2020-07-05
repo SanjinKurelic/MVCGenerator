@@ -2,7 +2,7 @@ package {$rootNamespace}.service;
 
 import {$rootNamespace}.entity.{$entityName};
 import {$rootNamespace}.repository.{$entityName}Repository;
-{% if ($idComposite) %}
+{% if ($idComposite == true) %}
 import {$rootNamespace}.entity.{$entityName}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -34,7 +33,7 @@ public class {$entityName}Service {
 
   public void update({$entityName} {$entityNameLowercaseFirst}) throws Exception {
     validate({$entityNameLowercaseFirst});
-    {$entityNameLowercaseFirst}Repository.findById({$entityNameLowercaseFirst}.getId()).orElseThrow(() -> new Exception("{$entityName} not found by id: " + {$entityNameLowercaseFirst}.getId()));
+    {$entityNameLowercaseFirst}Repository.findById({$entityNameLowercaseFirst}.get{$idName}()).orElseThrow(() -> new Exception("{$entityName} not found by id: " + {$entityNameLowercaseFirst}.get{$idName}()));
     {$entityNameLowercaseFirst}Repository.save({$entityNameLowercaseFirst});
   }
 

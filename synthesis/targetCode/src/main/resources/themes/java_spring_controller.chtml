@@ -2,7 +2,7 @@ package {$rootNamespace}.controller;
 
 import {$rootNamespace}.entity.{$entityName};
 import {$rootNamespace}.service.{$entityName}Service;
-{% if ($idComposite) %}
+{% if ($idComposite == true) %}
 import {$rootNamespace}.entity.{$entityName}Id;
 {% endif %}
 {% include java_spring_component_extra_import %}
@@ -34,7 +34,7 @@ public class {$entityName}Controller {
 
   @GetMapping("{% include java_spring_component_id_parameters_url %}")
   public {$entityName} get({% include java_spring_component_id_parameters_function %}) {
-    {% if ($idComposite) %}
+    {% if ($idComposite == true) %}
     return {$entityNameLowercaseFirst}Service.get(new {$entityName}Id({% include java_spring_component_id_parameters %})).orElse(null);
     {% else %}
     return {$entityNameLowercaseFirst}Service.get({% include java_spring_component_id_parameters %}).orElse(null);
@@ -55,7 +55,7 @@ public class {$entityName}Controller {
 
   @DeleteMapping("{% include java_spring_component_id_parameters_url %}")
   public Map<String, Object> remove({% include java_spring_component_id_parameters_function %}) throws Exception {
-    {% if ($idComposite) %}
+    {% if ($idComposite == true) %}
     {$entityNameLowercaseFirst}Service.delete(new {$entityName}Id({% include java_spring_component_id_parameters %}));
     {% else %}
     {$entityNameLowercaseFirst}Service.delete({% include java_spring_component_id_parameters %});

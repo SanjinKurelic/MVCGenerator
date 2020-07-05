@@ -14,6 +14,8 @@ public class TemplateAttributeNames {
   public static final String ENTITY_REAL_NAME = "entityRealName";
   // Id class (ex. Integer id)
   public static final String ID_CLASS = "idClass";
+  // Id name used in service for fetching the id (ex. studentRepository.findById(student.get<Id>()); )
+  public static final String ID_NAME = "idName";
   // Composite id (ex. true |false/null => new BookId(name, category) )
   public static final String ID_COMPOSITE = "idComposite";
   // Composite id parameters (ex. HashMap => function void addBook(String name, String category))
