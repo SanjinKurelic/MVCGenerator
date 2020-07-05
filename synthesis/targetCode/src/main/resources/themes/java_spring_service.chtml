@@ -1,0 +1,52 @@
+package {$rootNamespace}.service;
+
+import {$rootNamespace}.entity.{$entityName};
+import {$rootNamespace}.repository.{$entityName}Repository;
+{% if ($idComposite) %}
+import {$rootNamespace}.entity.{$entityName}Id;
+{% endif %}
+{% include java_spring_component_extra_import %}
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+@Service
+public class {$entityName}Service {
+
+  @Autowired
+  private {$entityName}Repository {$entityNameLowercaseFirst}Repository;
+
+  public List<{$entityName}> getAll() {
+    return (List<{$entityName}>) {$entityNameLowercaseFirst}Repository.findAll();
+  }
+
+  public Optional<{$entityName}> get({$idClass} id) {
+    return {$entityNameLowercaseFirst}Repository.findById(id);
+  }
+
+  public void add({$entityName} {$entityNameLowercaseFirst}) throws Exception {
+    validate({$entityNameLowercaseFirst});
+    {$entityNameLowercaseFirst}Repository.save({$entityNameLowercaseFirst});
+  }
+
+  public void update({$entityName} {$entityNameLowercaseFirst}) throws Exception {
+    validate({$entityNameLowercaseFirst});
+    {$entityNameLowercaseFirst}Repository.findById({$entityNameLowercaseFirst}.getId()).orElseThrow(() -> new Exception("{$entityName} not found by id: " + {$entityNameLowercaseFirst}.getId()));
+    {$entityNameLowercaseFirst}Repository.save({$entityNameLowercaseFirst});
+  }
+
+  public void delete({$idClass} id) throws Exception {
+    {$entityNameLowercaseFirst}Repository.findById(id).orElseThrow(() -> new Exception("{$entityName} not found by id: " + id));
+    {$entityNameLowercaseFirst}Repository.deleteById(id);
+  }
+
+  private void validate({$entityName} {$entityNameLowercaseFirst}) throws Exception {
+    // TODO validation
+    /*if (Objects.isNull({$entityNameLowercaseFirst}.getId())) {
+      throw new Exception("{$entityName} id can not be empty");
+    }*/
+  }
+}

@@ -1,0 +1,34 @@
+package {$rootNamespace}.config;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class {$projectName}GlobalExceptionHandler {
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public Map<String, Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    List<String> errors = ex.getBindingResult()
+      .getAllErrors()
+      .stream()
+      .map(e -> StringUtils.capitalize(((FieldError) e).getField()) + " " + e.getDefaultMessage())
+      .collect(Collectors.toList());
+    return Map.of("success", false, "message", errors);
+  }
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(Exception.class)
+  public Map<String, Object> handleValidationExceptions(Exception e) {
+    return Map.of("success", false, "message", e.getMessage());
+  }
+}

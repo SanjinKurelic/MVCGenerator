@@ -1,63 +1,75 @@
 package eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.parser;
 
+import com.x5.template.Chunk;
+import com.x5.template.Theme;
+import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.exception.TargetCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.exception.UnsupportedTargetFrameworkTargetCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetFramework;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.java.spring.writer.JavaSpringControllerWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.java.spring.writer.JavaSpringEntityWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.java.spring.writer.JavaSpringProjectWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.java.spring.writer.JavaSpringRepositoryWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.java.spring.writer.JavaSpringServiceWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.java.spring.writer.JavaSpringViewWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.writer.ControllerWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.writer.EntityWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.writer.ProjectWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.writer.RepositoryWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.writer.ServiceWriter;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.writer.ViewWriter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetSettings;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.converter.Converter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.models.TemplateAttributeNames;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.writer.ProjectWriter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.impl.java.spring.converter.JavaSpringConverter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.impl.java.spring.writer.JavaSpringProjectWriter;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.util.CodeOutputWriterUtil;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
 
 public class TargetCodeSupplier {
 
-  private final ProjectWriter projectWriter;
-  private final ViewWriter viewWriter;
-  private final ControllerWriter controllerWriter;
-  private final ServiceWriter serviceWriter;
-  private final EntityWriter entityWriter;
-  private final RepositoryWriter repositoryWriter;
+  public static final String JAVA_SPRING_TEMPLATE = "java_spring_";
 
-  public TargetCodeSupplier(TargetFramework targetFramework) throws TargetCodeException {
-    if (TargetFramework.SPRING.equals(targetFramework)) {
+  private final TargetSettings targetSettings;
+  private final ProjectWriter projectWriter;
+  private final Converter converter;
+  private final String templatePrefix;
+
+  private Map<String, Object> commonAttributes;
+
+  public TargetCodeSupplier(TargetSettings targetSettings) throws TargetCodeException {
+    this.targetSettings = targetSettings;
+    commonAttributes = Map.of();
+
+    if (TargetFramework.SPRING.equals(targetSettings.getTargetFramework())) {
       projectWriter = new JavaSpringProjectWriter();
-      controllerWriter = new JavaSpringControllerWriter();
-      entityWriter = new JavaSpringEntityWriter();
-      repositoryWriter = new JavaSpringRepositoryWriter();
-      serviceWriter = new JavaSpringServiceWriter();
-      viewWriter = new JavaSpringViewWriter();
+      converter = new JavaSpringConverter();
+      templatePrefix = JAVA_SPRING_TEMPLATE;
+    } else {
+      throw new UnsupportedTargetFrameworkTargetCodeException(targetSettings.getTargetFramework());
     }
-    throw new UnsupportedTargetFrameworkTargetCodeException(targetFramework);
+  }
+
+  public void setCommonAttributes(Token tableName, Boolean isIdComposite) {
+    String entityName = getConverter().convertSqlTableNameToNativeClassName(tableName);
+    commonAttributes = Map.of(
+      TemplateAttributeNames.ROOT_NAMESPACE, targetSettings.getRootNamespace(),
+      TemplateAttributeNames.ENTITY_NAME, entityName,
+      TemplateAttributeNames.ENTITY_NAME_LOWERCASE_FIRST, StringUtils.uncapitalize(entityName),
+      TemplateAttributeNames.ID_COMPOSITE, isIdComposite
+    );
   }
 
   public ProjectWriter getProjectWriter() {
     return projectWriter;
   }
 
-  public ViewWriter getViewWriter() {
-    return viewWriter;
+  public Converter getConverter() {
+    return converter;
   }
 
-  public ControllerWriter getControllerWriter() {
-    return controllerWriter;
+  public CodeOutputWriterUtil getOutputWriter() {
+    return CodeOutputWriterUtil.getInstance(targetSettings);
   }
 
-  public ServiceWriter getServiceWriter() {
-    return serviceWriter;
+  public Chunk getTemplate(TargetCodeType targetCodeType) {
+    return getChunk(targetCodeType.name().toLowerCase());
   }
 
-  public EntityWriter getEntityWriter() {
-    return entityWriter;
-  }
-
-  public RepositoryWriter getRepositoryWriter() {
-    return repositoryWriter;
+  private Chunk getChunk(String template) {
+    var chunk = new Theme().makeChunk(templatePrefix + template);
+    commonAttributes.forEach(chunk::set);
+    return chunk;
   }
 }

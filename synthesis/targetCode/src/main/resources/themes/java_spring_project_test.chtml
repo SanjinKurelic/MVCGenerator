@@ -1,0 +1,13 @@
+package {$rootNamespace};
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class {$projectName}ApplicationTests {
+
+  @Test
+  void contextLoads() {
+  }
+
+}

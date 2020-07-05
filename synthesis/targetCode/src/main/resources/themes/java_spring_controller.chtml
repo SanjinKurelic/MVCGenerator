@@ -2,9 +2,10 @@ package {$rootNamespace}.controller;
 
 import {$rootNamespace}.entity.{$entityName};
 import {$rootNamespace}.service.{$entityName}Service;
-{% if ($idClassPackage) %}
-import {$idClassPackage};
+{% if ($idComposite) %}
+import {$rootNamespace}.entity.{$entityName}Id;
 {% endif %}
+{% include java_spring_component_extra_import %}
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,53 +16,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/{$entityName|lc}")
+@RequestMapping("/api/{$entityNameLowercaseFirst}")
 public class {$entityName}Controller {
 
   @Autowired
-  private {$entityName}Service {$entityName|lc}Service;
+  private {$entityName}Service {$entityNameLowercaseFirst}Service;
 
   @GetMapping("/all")
   public List<{$entityName}> getAll() {
-    return {$entityName|lc}Service.getAll();
+    return {$entityNameLowercaseFirst}Service.getAll();
   }
 
-  @GetMapping("/{id}")
-  public {$entityName} get(@PathVariable {$idClass} id) {
-    return {$entityName|lc}Service.get(id).orElse(null);
+  @GetMapping("{% include java_spring_component_id_parameters_url %}")
+  public {$entityName} get({% include java_spring_component_id_parameters_function %}) {
+    {% if ($idComposite) %}
+    return {$entityNameLowercaseFirst}Service.get(new {$entityName}Id({% include java_spring_component_id_parameters %})).orElse(null);
+    {% else %}
+    return {$entityNameLowercaseFirst}Service.get({% include java_spring_component_id_parameters %}).orElse(null);
+    {% endif %}
   }
 
   @PostMapping
-  public Map<String, Object> add(@RequestBody {$entityName} {$entityName|lc}) {
-    try {
-      {$entityName|lc}Service.add({$entityName|lc});
-      return Map.of("success", true);
-    } catch (Exception e) {
-      return Map.of("success", false, "message", e.getMessage());
-    }
+  public Map<String, Object> add(@Valid @RequestBody {$entityName} {$entityNameLowercaseFirst}) throws Exception {
+    {$entityNameLowercaseFirst}Service.add({$entityNameLowercaseFirst});
+    return Map.of("success", true);
   }
 
   @PutMapping
-  public Map<String, Object> update(@RequestBody {$entityName} {$entityName|lc}) {
-    try {
-      {$entityName|lc}Service.update({$entityName|lc});
-      return Map.of("success", true);
-    } catch (Exception e) {
-      return Map.of("success", false, "message", e.getMessage());
-    }
+  public Map<String, Object> update(@Valid @RequestBody {$entityName} {$entityNameLowercaseFirst}) throws Exception {
+    {$entityNameLowercaseFirst}Service.update({$entityNameLowercaseFirst});
+    return Map.of("success", true);
   }
 
-  @DeleteMapping("/{id}")
-  public Map<String, Object> remove(@PathVariable {$idClass} id) {
-    try {
-      {$entityName|lc}Service.delete(id);
-      return Map.of("success", true);
-    } catch (Exception e) {
-      return Map.of("success", false, "message", e.getMessage());
-    }
+  @DeleteMapping("{% include java_spring_component_id_parameters_url %}")
+  public Map<String, Object> remove({% include java_spring_component_id_parameters_function %}) throws Exception {
+    {% if ($idComposite) %}
+    {$entityNameLowercaseFirst}Service.delete(new {$entityName}Id({% include java_spring_component_id_parameters %}));
+    {% else %}
+    {$entityNameLowercaseFirst}Service.delete({% include java_spring_component_id_parameters %});
+    {% endif %}
+    return Map.of("success", true);
   }
 }

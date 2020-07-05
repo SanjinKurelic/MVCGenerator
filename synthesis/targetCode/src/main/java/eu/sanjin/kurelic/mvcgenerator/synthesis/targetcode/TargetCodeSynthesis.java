@@ -18,8 +18,4 @@ public class TargetCodeSynthesis {
     targetCodeParser = new TargetCodeParser(intermediateCodeSynthesis.getSemanticAttributeTable());
     targetCodeParser.parse(targetSettings);
   }
-
-  public String getStatus() {
-    return targetCodeParser.getStatus();
-  }
 }

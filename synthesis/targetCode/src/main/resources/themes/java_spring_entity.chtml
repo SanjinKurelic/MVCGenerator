@@ -1,0 +1,55 @@
+package {$rootNamespace}.entity;
+
+{% if ($idComposite) %}
+import {$rootNamespace}.entity.{$entityName}Id;
+{% endif %}
+{% include java_spring_component_extra_import %}
+import com.fasterxml.jackson.annotation.JsonInclude;
+import javax.persistence.Entity;
+import javax.validation.constraints.*;
+{% if ($idClass == "Integer") %}
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+{% endif %}
+{% if ($idComposite) %}
+import javax.persistence.EmbeddedId;
+{% else %}
+import javax.persistence.Id
+{% endif %}
+
+@Entity
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class {$entityName} {
+
+  {% if ($idComposite) %}
+  @EmbeddedId
+  {% else %}
+  @Id
+  {% endif %}
+  {% if ($idClass == "Integer") %}
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  {% endif %}
+  private {$idClass} id; //TODO this is not name of id
+
+  // TODO -- add attributes & annotations
+  {% loop $attributes as $attribute %}
+  {% if ($attribute.primaryKey) %}
+
+  {% elseif () %}
+
+  {% endif %}
+  private {$attribute.type} {$attribute.name};
+  {% onEmpty %}
+  {% endloop }
+
+  {% loop $attributes as $name:$type %} // TODO as class
+  public {$type} get{$name}() {
+    return {$name}; //TODO this is lc
+  }
+
+  public void set{$name}({$type} {$name}) {
+    this.{$name} = {$name};
+  }
+  {% onEmpty %}
+  {% endloop %}
+}

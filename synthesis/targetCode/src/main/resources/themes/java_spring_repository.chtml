@@ -2,9 +2,10 @@ package {$rootNamespace}.repository;
 
 import {$rootNamespace}.entity.{$entityName};
 import org.springframework.data.repository.CrudRepository;
-{% if ($idClassPackage) %}
-import {$idClassPackage};
+{% if ($idComposite) %}
+import {$rootNamespace}.entity.{$entityName}Id;
 {% endif %}
+{% include java_spring_component_extra_import %}
 
 public interface {$entityName}Repository extends CrudRepository<{$entityName}, {$idClass}> {
 }

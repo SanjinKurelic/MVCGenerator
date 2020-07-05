@@ -1,5 +1,7 @@
 package eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class TargetSettings {
 
   private String projectName;
@@ -12,7 +14,7 @@ public class TargetSettings {
   }
 
   public void setProjectName(String projectName) {
-    this.projectName = projectName;
+    this.projectName = StringUtils.capitalize(projectName);
   }
 
   public String getRootNamespace() {
