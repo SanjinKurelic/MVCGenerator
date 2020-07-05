@@ -1,42 +1,57 @@
-{% if ($attribute.model.primary == true) %}
-{% if ($id_composite == true) %}
-@EmbeddedId
-{% elseif ($composite_entity == false) %}
-@Id
-{% endif %}
-{% if ($composite_entity == false) %}
-{% if ($id_class == "Integer") %}
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-{% endif %}
-{% elseif ($attribute.type == "Integer") %}
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-{% endif %}
-{% elseif ($attribute.model.not_null == true) %}
-@NotNull
-{% elseif ($attribute.model.length) %}
-@Size(max = {$attribute.model.length})
-{% elseif ($attribute.model.assert_true == true) %}
-@AssertTrue
-{% elseif ($attribute.model.assert_false == true) %}
-@AssertFalse
-{% elseif ($attribute.model.is_future == true) %}
-@Future
-{% elseif ($attribute.model.is_future_or_present == true) %}
-@FutureOrPresent
-{% elseif ($attribute.model.is_past == true) %}
-@Past
-{% elseif ($attribute.model.is_past_or_present == true) %}
-@PastOrPresent
-{% elseif ($attribute.model.max) %}
-@Max({$attribute.model.max})
-{% elseif ($attribute.model.min) %}
-@Min({$attribute.model.min})
-{% elseif ($attribute.model.is_foreign == true) %}
-{% if ($attribute.model.unique == true) %}
-@OneToOne({% include java_spring_component_extra_import %})
-{% elseif ($attribute.model.primary == true) %}
-@OneToOne({% include java_spring_component_extra_import %})
-{% else %}
-@ManyToOne({% include java_spring_component_extra_import %})
-{% endif %}
-{% endif %}
+  {% if (!$attribute.model.is_foreign) %}
+  @Column(name = "{$attribute.model.column_name.value}")
+  {% endif %}
+  {% if ($attribute.model.is_foreign) %}
+  @JoinColumn(name = "{$attribute.model.column_name.value}")
+  {% endif %}
+  {% if ($attribute.model.is_primary == true && $id_composite == true) %}
+  @EmbeddedId
+  {% endif %}
+  {% if ($attribute.model.is_primary) %}
+  @Id
+  {% endif %}
+  {% if ($attribute.model.is_primary == true && $attribute.type == "Integer") %}
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  {% endif %}
+  {% if ($attribute.model.is_not_null) %}
+  @NotNull
+  {% endif %}
+  {% if ($attribute.model.length) %}
+  @Size(max = {$attribute.model.length})
+  {% endif %}
+  {% if ($attribute.model.is_assert_true) %}
+  @AssertTrue
+  {% endif %}
+  {% if ($attribute.model.is_assert_false) %}
+  @AssertFalse
+  {% endif %}
+  {% if ($attribute.model.is_future) %}
+  @Future
+  {% endif %}
+  {% if ($attribute.model.is_future_or_present) %}
+  @FutureOrPresent
+  {% endif %}
+  {% if ($attribute.model.is_past) %}
+  @Past
+  {% endif %}
+  {% if ($attribute.model.is_past_or_present) %}
+  @PastOrPresent
+  {% endif %}
+  {% if ($attribute.model.max|onempty(EMPTY) != EMPTY && $attribute.type == "Integer") %}
+  @Max({$attribute.model.max})
+  {% endif %}
+  {% if ($attribute.model.max|onempty(EMPTY) != EMPTY && $attribute.type != "Integer") %}
+  @DecimalMax(value = "{$attribute.model.max}", inclusive = {$attribute.model.is_inclusive_max|lc:false})
+  {% endif %}
+  {% if ($attribute.model.min|onempty(EMPTY) != EMPTY && $attribute.type == "Integer") %}
+  @Min({$attribute.model.min})
+  {% endif %}
+  {% if ($attribute.model.min|onempty(EMPTY) != EMPTY && $attribute.type != "Integer") %}
+  @DecimalMin(value = "{$attribute.model.min}", inclusive = {$attribute.model.is_inclusive_min|lc:false})
+  {% endif %}
+  {% if ($attribute.model.is_foreign) %}
+    {% if ($attribute.model.is_unique) %}
+  @OneToOne({% include java_spring_component_annotation_cascade %}{% elseIf ($attribute.model.is_primary) %}
+  @OneToOne({% include java_spring_component_annotation_cascade %}{% else %}
+  @ManyToOne({% include java_spring_component_annotation_cascade %}{% endif %}
+  {% endif %}

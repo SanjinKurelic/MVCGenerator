@@ -1,8 +1,5 @@
 package {$root_namespace}.entity;
 
-{% if ($id_composite == true) %}
-import {$root_namespace}.entity.{$entity_name}Id;
-{% endif %}
 {% include java_spring_component_extra_import %}
 import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.persistence.*;
@@ -16,16 +13,18 @@ import java.util.StringJoiner;
 @Table(name = "{$entity_real_name}")
 {% endif %}
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@SuppressWarnings("JpaDataSourceORMInspection")
 public class {$entity_name}{% if ($composite_entity == true) %}Id{% endif %} {
 
-  {% loop in $column_attributes as $attribute %}
-  {% include java_spring_component_annotation %}
-  @{% if ($attribute.model.is_foreign == true) %}Join{% endif %}Column(name = "{$attribute.model.column_name.value}")
-  private {$attribute.type} {$attribute.name_lowercase_first}{% if ($attribute.value) %} = {$attribute.value}{% endif %};
+  {% loop in $column_attributes as $attribute first_last=true %}
+{% include java_spring_component_annotation %}  private {$attribute.type} {$attribute.name_lowercase_first}{% if ($attribute.value) %} = {$attribute.value}{% endif %};
+  {% if (!$last) %}
+
+  {% endif %}
   {% onEmpty %}
   {% endloop }
-
   {% loop in $column_attributes as $attribute %}
+
   public {$attribute.type} get{$attribute.name}() {
     return {$attribute.name_lowercase_first};
   }

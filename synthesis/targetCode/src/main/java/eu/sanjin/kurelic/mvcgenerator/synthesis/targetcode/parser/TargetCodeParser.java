@@ -20,7 +20,6 @@ public class TargetCodeParser {
 
   private final SemanticAttributeTable semanticAttributeTable;
   private TargetCodeSupplier targetCodeSupplier;
-  private TargetSettings targetSettings;
 
   public TargetCodeParser(SemanticAttributeTable semanticAttributeTable) {
     this.semanticAttributeTable = semanticAttributeTable;
@@ -28,7 +27,6 @@ public class TargetCodeParser {
 
   public void parse(TargetSettings targetSettings) throws TargetCodeException {
     targetCodeSupplier = new TargetCodeSupplier(targetSettings);
-    this.targetSettings = targetSettings;
 
     // generate project structure
     targetCodeSupplier.getProjectWriter().generateProjectStructure(targetSettings);
@@ -168,7 +166,6 @@ public class TargetCodeParser {
         attribute.setCascadeUpdate(!ReferenceAction.NO_ACTION.equals(column.getForeignUpdateAction()));
         // Define data type as foreign table entity
         typeDefinition.setName(targetCodeSupplier.getConverter().convertSqlTableNameToNativeClassName(column.getForeignTable()));
-        typeDefinition.setNamespace(String.format("%s.entity.%s;", targetSettings.getRootNamespace(), typeDefinition.getName()));
       } else {
         typeDefinition = targetCodeSupplier.getConverter().convertSqlTypeToNative(column.getDataType());
       }
