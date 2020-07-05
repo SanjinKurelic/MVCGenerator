@@ -21,7 +21,12 @@
         <dependency>
             <groupId>com.x5dev</groupId>
             <artifactId>chunk-templates</artifactId>
-            <version>3.5.0</version>
+            <version>${mvc.generator.version.chunk}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${mvc.generator.version.commons.lang}</version>
         </dependency>
     </dependencies>
 </project>
