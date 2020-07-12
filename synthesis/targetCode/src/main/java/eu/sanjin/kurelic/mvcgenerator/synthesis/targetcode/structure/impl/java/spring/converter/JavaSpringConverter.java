@@ -24,9 +24,8 @@ public class JavaSpringConverter extends Converter {
       case TIME:
         return new TypeDefinition("LocalTime", "java.time.LocalTime");
       case TIMESTAMP:
-        return new TypeDefinition("TODO", "TODO"); // TODO
       case INTERVAL:
-        return new TypeDefinition("TODO2", "TODO"); // TODO
+        return new TypeDefinition("Instant", "java.time.Instant");
       case ZONED_DATETIME:
         return new TypeDefinition("ZonedDateTime", "java.time.ZonedDateTime");
       case STRING:
@@ -52,9 +51,8 @@ public class JavaSpringConverter extends Converter {
       case TIME:
         return String.format("LocalTime.parse(\"%s\")", value);
       case TIMESTAMP:
-        return ""; // TODO
       case INTERVAL:
-        return ""; // TODO
+        return String.format("Instant.parse(\"%s\")", value);
       case ZONED_DATETIME:
         return String.format("ZonedDateTime.parse(\"%s\")", value.replace(' ', 'T'));
       default:

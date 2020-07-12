@@ -43,9 +43,11 @@ public class {$entity_name}Service {
   }
 
   private void validate({$entity_name} {$entity_name_lowercase_first}) throws Exception {
-    // TODO validation
-    /*if (Objects.isNull({$entity_name_lowercase_first}.getId())) {
-      throw new Exception("{$entity_name} id can not be empty");
-    }*/
+    {% loop in validation_rules as $validation %}
+    if (!({$validation})) {
+      throw new Exception("Unsatisfied validation rule: {$validation}");
+    }
+    {% onEmpty %}
+    {% endloop }
   }
 }

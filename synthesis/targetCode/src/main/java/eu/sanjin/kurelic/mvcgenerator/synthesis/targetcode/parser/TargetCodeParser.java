@@ -112,7 +112,10 @@ public class TargetCodeParser {
     }
 
     // Every language has different style of writing
-    var validations = targetCodeSupplier.getValidationWriter().transformCheckExpressionToNativeIf(tableAttribute.getCheckAttribute().getCheckExpressions());
+    List<String> validations = new ArrayList<>();
+    tableAttribute.getCheckAttribute().getCheckExpressions().forEach(expression -> {
+      // TODO add validations
+    });
 
     // Generate template
     Chunk template = targetCodeSupplier.getTemplate(targetCodeType);
