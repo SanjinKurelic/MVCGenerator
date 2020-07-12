@@ -23,6 +23,16 @@ public class {$entity_name}{% if ($composite_entity == true) %}Id{% endif %} {
   {% endif %}
   {% onEmpty %}
   {% endloop }
+
+  public {$entity_name}{% if ($composite_entity == true) %}Id{% endif %}() {
+  }
+
+  public {$entity_name}{% if ($composite_entity == true) %}Id{% endif %}({% loop in $column_attributes as $attribute divider=', ' %}{$attribute.type} {$attribute.name_lowercase_first}{% onEmpty %}{% endloop %}) {
+    {% loop in $column_attributes as $attribute %}
+    this.{$attribute.name_lowercase_first} = {$attribute.name_lowercase_first};
+    {% onEmpty %}
+    {% endloop %}
+  }
   {% loop in $column_attributes as $attribute %}
 
   public {$attribute.type} get{$attribute.name}() {

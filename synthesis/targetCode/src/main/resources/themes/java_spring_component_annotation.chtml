@@ -9,9 +9,9 @@
   {% endif %}
   {% if ($attribute.model.is_primary) %}
   @Id
-  {% endif %}
-  {% if ($attribute.model.is_primary == true && $attribute.type == "Integer") %}
+  {% if ($attribute.type == "Integer") %}
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  {% endif %}
   {% endif %}
   {% if ($attribute.model.is_not_null) %}
   @NotNull
