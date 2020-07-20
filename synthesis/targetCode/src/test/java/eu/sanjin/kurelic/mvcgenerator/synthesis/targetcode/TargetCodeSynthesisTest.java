@@ -5,6 +5,8 @@ import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetSetti
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Paths;
+
 class TargetCodeSynthesisTest {
 
   private TargetCodeSynthesis targetCodeSynthesis;
@@ -15,9 +17,9 @@ class TargetCodeSynthesisTest {
     targetCodeSynthesis = new TargetCodeSynthesis();
     targetSettings = new TargetSettings();
     targetSettings.setRootNamespace("eu.sanjin.kurelic");
-    targetSettings.setProjectName("test");
+    targetSettings.setProjectName("Test");
     targetSettings.setTargetFramework(TargetFramework.SPRING);
-    targetSettings.setOutputPath("C:/Users/skurelic/Desktop/Test");
+    targetSettings.setOutputPath(Paths.get(System.getProperty("user.home"), "Test").toAbsolutePath().toString());
   }
 
   @Test
@@ -38,7 +40,7 @@ class TargetCodeSynthesisTest {
     code.append(");");
     try {
       targetCodeSynthesis.parse(code.toString(), targetSettings);
-      System.out.println("OK");
+      System.out.println("Project generated at location: " + targetSettings.getOutputPath());
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
