@@ -17,7 +17,7 @@ public class FilePicker extends JPanel {
   private static final int BUTTON_MARGIN = 3;
   private static final int PATH_FIELD_WIDTH = 147;
   private static final int PATH_BUTTON_GAP_WIDTH = 5;
-  private static final String ACCEPTED_EXTENSION = ".sql";
+  private static final String ACCEPTED_EXTENSION = "sql";
   private static final String ACCEPTED_EXTENSION_DESCRIPTION = "SQL file format (.sql)";
   public static final int OPEN_FILE = 1;
   public static final int OPEN_DIRECTORY = 2;
@@ -25,10 +25,11 @@ public class FilePicker extends JPanel {
   private int mode;
   private final TextField textField;
   private final JFileChooser fileChooser;
+  private final FileNameExtensionFilter fileNameExtensionFilter;
 
   public FilePicker() {
     fileChooser = new JFileChooser();
-    fileChooser.setFileFilter(new FileNameExtensionFilter(ACCEPTED_EXTENSION_DESCRIPTION, ACCEPTED_EXTENSION));
+    fileNameExtensionFilter = new FileNameExtensionFilter(ACCEPTED_EXTENSION_DESCRIPTION, ACCEPTED_EXTENSION);
 
     setLayout(new GridBagLayout());
     setBackground(StyleUtil.getBackgroundColor());
@@ -50,8 +51,10 @@ public class FilePicker extends JPanel {
     // set mode
     if (mode == OPEN_FILE) {
       fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      fileChooser.setFileFilter(fileNameExtensionFilter);
     } else if (mode == OPEN_DIRECTORY) {
       fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+      fileChooser.removeChoosableFileFilter(fileNameExtensionFilter);
     }
     if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       textField.setText(fileChooser.getSelectedFile().getAbsolutePath());

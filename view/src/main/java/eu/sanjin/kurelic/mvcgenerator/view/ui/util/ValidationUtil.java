@@ -45,7 +45,7 @@ public class ValidationUtil {
     // Root namespace
     if (!Objects.isNull(rootNamespace) && !rootNamespace.isBlank()) {
       for (char character : rootNamespace.toCharArray()) {
-        if (!Character.isAlphabetic(character) || character != '.') {
+        if (!Character.isAlphabetic(character) && character != '.') {
           errors.add(ROOT_NAMESPACE_UNEXPECTED_CHARACTER);
           break;
         }
