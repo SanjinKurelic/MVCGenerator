@@ -4,7 +4,7 @@ import com.x5.template.Chunk;
 import com.x5.template.Theme;
 import eu.sanjin.kurelic.mvcgenerator.analysis.lexical.structure.Token;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.exception.TargetCodeException;
-import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.exception.UnsupportedTargetFrameworkTargetCodeException;
+import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.exception.UnsupportedFrameworkTargetCodeException;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetFramework;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.TargetSettings;
 import eu.sanjin.kurelic.mvcgenerator.synthesis.targetcode.structure.definition.converter.Converter;
@@ -37,7 +37,7 @@ public class TargetCodeSupplier {
       converter = new JavaSpringConverter();
       templatePrefix = JAVA_SPRING_TEMPLATE;
     } else {
-      throw new UnsupportedTargetFrameworkTargetCodeException(targetSettings.getTargetFramework());
+      throw new UnsupportedFrameworkTargetCodeException(targetSettings.getTargetFramework());
     }
   }
 
